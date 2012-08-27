@@ -2,11 +2,13 @@
 
 Please visit the site itself here: http://CouchbaseModels.com/
 
-The site is written in Ruby on Rails and is broken down into a Main App (cbmodels_app_controller) and three subsections Models, Patterns and Strategies (cb_models, cb_patterns, and cb_strategies). If you look in app/controllers and app/views you can see the pages and their structures. In the app/models area, the Analytics module initializes Couchbase with default initial values.
+The site is written in Ruby on Rails and is broken down into a Main App (cbmodels_app_controller) and three subsections Models, Patterns and Strategies (cb_models, cb_patterns, and cb_strategies). 
 
-Like: https://github.com/scalabl3/couchbasemodels.com/blob/master/app/views/cb_patterns/counter_id.html.erb
+If you look in app/controllers and app/views you can see the pages and their structures. Like: https://github.com/scalabl3/couchbasemodels.com/blob/master/app/views/cb_patterns/counter_id.html.erb
 
-It uses Twitter Bootstrap and the Google Code Prettify. 
+In the app/models area, the Analytics module initializes Couchbase with default initial values.
+
+For layout, css and styling, it uses Twitter Bootstrap and the Google Code Prettify. 
 
 == Description of Contents
 
