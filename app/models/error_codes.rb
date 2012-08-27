@@ -1,0 +1,3 @@
+module ErrorCodes
+
+end

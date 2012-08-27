@@ -1,0 +1,149 @@
+<% content_for :title, "Complex Model (Creating Multiple Documents for an Object)" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/strategies">Strategies</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Complex</li>
+</ul>
+
+<br />
+<div class="page-header">
+  <h1>Complex Model
+		<small>Creating Multiple Documents for an Object</small>
+	</h1>
+	<br />
+	<p class="lead w80">This strategy describes mapping of instance variables and collections to multiple Couchbase documents.</p>
+
+  <h5>
+  	If you would like to read a full discussion about some reasons for doing this, please read through <a href="/strategies/behavioral">Behavioral 		Strategy</a> as it gives a longer treatment on the topic.
+  </h5>
+</div>
+
+
+
+<h3>Document Store Module</h3>
+<p>
+  Simple module to use a single shared connection, of course I have made my personal one very robust, but these are easy examples.
+</p>
+<pre class="prettyprint linenums lang-rb">
+require 'couchbase'
+
+module DocumentStore
+  C = Couchbase.new("http://localhost:8091/")
+  C.quiet = true                                # return nil instead of Exceptions for missing keys
+end
+
+</pre>
+
+<br /><br />
+
+<h3>Object <> Document + Atomic Counter</h3>
+<p>
+  Here we separate out the inventory into a simple add-on key as an atomic counter. The main document is still saved using Product#save command which iterates through instance variables.   
+</p>
+
+<pre class="prettyprint linenums lang-rb">
+class Product
+  include DocumentStore
+  
+  attr_accessor :sku, :name, :price
+  
+  # iterate through attr keys and set instance vars
+  def initialize(attr = {})
+    unless attr.nil?
+      attr.each do |name, value|
+        setter = "#{name}="
+        next unless respond_to?(setter)
+        send(setter, value)
+      end
+    end
+  end
+
+
+  # iterate through instance variables and convert keypairs to hash
+  def to_hash
+    Hash[instance_variables.map { |name| [name[1..name.size].to_s, instance_variable_get(name)] } ]
+  end
+	
+	
+  # save object to Couchbase, with the email as the key, normally we use a common module 
+  # for the connection as only a single connection is required for an entire app server
+  def save
+    C.set(@sku.downcase, to_hash)
+    doc = C.get(@sku.downcase + "::inventory_count")          # get current inventory counter
+    C.set(@sku.downcase + "::inventory_count", 0) unless doc  # initialize if counter doesn't exist
+  end
+  
+  # return current inventory 
+  def inventory
+    return nil unless @sku
+    C.get(@sku.downcase + "::inventory_count")    
+  end
+  
+  # increase the current inventory
+  def increase_inventory(q)
+    return nil if q <= 0
+    C.incr(@sku.downcase + "::inventory_count", q, :initial => 0 + q)
+  end
+  
+  # decrease the current inventory, but only if the quantity is available, also returns remaining inventory
+  def decrease_inventory(q)
+    return nil if q <= 0 || inventory == 0 || q > inventory
+    C.decr(@sku.downcase + "::inventory_count", q, :initial => 0) 
+  end
+  
+  class << self
+    include DocumentStore
+    
+    # find product by sku 
+    def find_by_sku(sku)    
+      C.quiet = true                # => don't throw exception for missing keys
+      doc = C.get(sku.downcase)     # => try to find key
+      return nil if doc.nil?        # => return nil unless key exists 
+      return Product.new(doc)       # => return Product object (doc will be a hash)
+    end
+    
+    # return inventory by sku
+    def inventory_by_sku(sku)
+      p = Product.find_by_sku(sku)
+      return p.inventory if p
+      nil
+    end
+    
+  end # end of class method definitions
+end
+</pre>
+<p>
+  In this basic class, we separate inventory out into a separate counter so that inventory management is atomic. Of course we would want to probably raise exceptions and/or error codes for situations like running out of inventory, but that's simple enough to add.
+</p>
+
+
+<br /><br />	
+
+<h3>Using the Product Class</h3>
+<p>
+  Here is how this would be used, and the resulting documents and output.
+</p>
+
+<pre class="prettyprint linenums lang-rb">
+require 'product'
+
+# you could get this from an input form for instance
+p1_hash = {
+  "sku" => "GI101", 
+  "name" => "GI Joe Standard",
+  "price" => "$11.99"
+}
+p1 = Product.new(p1_hash)             
+p1.save                                       # => { "sku": "GI101", "name": "GI Joe Standard", "price": "$11.99"}
+
+puts p1.inventory                             # => 0
+puts p1.increase_inventory(100)               # => 100
+puts p1.decrease_inventory(5)                 # => 95
+puts p1.decrease_inventory(500)               # => nil
+</pre>
+
+<%= render :partial => "/layouts/comments" %>

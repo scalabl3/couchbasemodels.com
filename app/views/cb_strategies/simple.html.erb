@@ -1,0 +1,115 @@
+<% content_for :title, "Simple Model (Direct Mapping of Instance Variables to Data Document)" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/strategies">Strategies</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Simple</li>
+</ul>
+
+<br />
+<div class="page-header">
+  <h1>Simple Model
+		<small>Direct Mapping of Instance Variables to Data Document</small>
+	</h1>
+	<br />
+	<p class="lead w80">This strategy describes a basic mapping of instance variables to a Couchbase document in a direct relationship.</p>	
+</div>
+
+<h3>Document Store Module</h3>
+<p>
+  Simple module to use a single shared connection, of course I have made my personal one very robust, but these are easy examples.
+</p>
+<pre class="prettyprint linenums lang-rb">
+require 'couchbase'
+
+module DocumentStore
+  C = Couchbase.new("http://localhost:8091/")
+  C.quiet = true                                # return nil instead of Exceptions for missing keys
+end
+
+</pre>
+
+<br /><br />
+
+<h3>Object <> Document</h3>
+<p>
+	Simple Models are a direct and a simple relationship between Object and Couchbase Document. <br />
+	Let's look at a class definition and methods to map back and forth:
+</p>
+
+<pre class="prettyprint linenums lang-rb">
+class User
+  include DocumentStore
+  
+  attr_accessor :name, :email, :password, :zip
+	
+  # iterate through attr keys and set instance vars
+  def initialize(attr = {})
+    unless attr.nil?
+      attr.each do |name, value|
+        setter = "#{name}="
+        next unless respond_to?(setter)
+        send(setter, value)
+      end
+    end
+  end
+
+
+  # iterate through instance variables and convert keypairs to hash
+  def to_hash
+    Hash[instance_variables.map { |name| [name[1..name.size].to_s, instance_variable_get(name)] } ]
+  end
+	
+	
+  # save object to Couchbase, with the email as the key, normally we use a common module 
+  # for the connection as only a single connection is required for an entire app server
+  def save    
+    C.set(@email.downcase, to_hash)
+  end
+  
+  class << self
+    include DocumentStore
+
+    # find user by email 
+    def self.find_by_email(email)    
+      C.quiet = true                # => don't throw exception for missing keys
+      doc = C.get(email.downcase)   # => try to find key
+      return nil if doc.nil?        # => return nil unless key exists 
+      return User.new(doc)          # => return User object (doc will be a hash)
+    end
+  end
+end
+</pre>
+<p>In this basic class, we have 4 simple methods, initialize, to_hash, save and a class method to find a user by email. </p>
+
+<br /><br />
+
+<h3>Model in Action</h3>
+<p>
+  Instantiating, saving and retrieving objects is simple and straightforward.
+</p>
+
+<pre class="prettyprint linenums lang-rb">
+# of course you could get this from submitted params instead
+u_hash = { 
+    "name" => "John Smith", 
+    "email" => "jsmith@email.com", 
+    "password" => "test",
+    "zip" => "94101" }
+    
+u = User.new(u_hash)                            # => Create a new user
+u.save                                          # => Save to Couchbase 
+# k: jsmith@email.com
+# v: { "name": "John Smith", "email": "jsmith@email.com", "password": "test", "zip": "94101" }
+
+john = User.find_by_email("jsmith@email.com")   # => Retrieve by email
+puts john.inspect
+# => &lt;User:0x007fef02820ca0 @name="John Smith", @email="jsmith@email.com", @password="test", @zip="94101"&gt;
+
+</pre>
+
+
+<%= render :partial => "/layouts/comments" %>

@@ -1,0 +1,24 @@
+<br />
+<hr>
+<br />
+<% if session[:user] && session[:superuser] %>
+  <script type="text/javascript">
+    $(document).ready(function(){
+    	pullComments();
+    });
+  </script>
+  <div>
+<% else %>
+  <div style="display:none;">
+<% end %>    
+
+    <h1 class="comment-title">Q&A and Comments</h1>
+    <form class="well">
+    <textarea id="comment_text" name="comment_text" class="span8" placeholder="Please make your comment, or ask a question..."></textarea>
+    <button id="submit-comment" class="btn btn-primary" type="submit">Send</button>
+    </form>
+
+    <br />
+    <h6>No Comments have been made yet, be the first!</h6>
+  </div>
+

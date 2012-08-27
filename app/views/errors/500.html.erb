@@ -1,0 +1,13 @@
+
+
+<div style="margin-top: 50px;text-align: center;">
+  <h2>We're sorry, there seems to be a bug in the CouchbaseModels application, we're looking into it!</h2>
+</div>
+
+<div style="margin-top: 50px;">
+<h1 style="color: white;">Superuser Only - Exception/Backtrace</h1>
+<h3><%= @error.message %></h3>
+<%= @error.backtrace.each do |e| %>
+<pre><%= e.to_s %></pre>
+<% end %>
+</div>

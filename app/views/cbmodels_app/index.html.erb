@@ -1,0 +1,78 @@
+<div class="hero-unit">
+	<div class="row-fluid">
+		
+		<div class="span12">
+			<div style="margin-left: 20px">
+	 			<h1>Couchbase Models</h1>
+	   		<p>
+				 	This *unofficial* site is dedicated to sharing mental <strong>strategies</strong>, <strong>design patterns</strong>, and <strong>model samples</strong> in Couchbase.
+				</p>
+				<p>	
+					Learning any new technology requires learning how to think in that technology. This site is dedicated to building that mental model of how
+					things work, using patterns for your structure, and learn modeling by example.
+				</p>
+				<h2>This site is a work in progress, there are blank pages, but I am filling them in quickly, please check back and likely I'll have filled it in within days.</h2>
+	   		<p><a href="/about" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+			</div>
+	 </div>
+	</div>
+</div>
+
+<h1 style="color: #733">Strategies</h1>
+<div class="row-fluid">
+	
+	
+	<div class="span4">
+		<h2>Simple Model</h2> 
+		<p>This strategy describes a basic mapping of instance variables to a Couchbase document in a direct relationship.</p>
+		<p><a class="btn" href="/strategies/simple">View Details &raquo;</a></p>
+	</div>
+	
+	<div class="span4">
+       <h2>Complex Model</h2>
+       <p>This strategy describes mapping of instance variables and collections to multiple Couchbase documents.</p>
+       <p><a class="btn" href="/strategies/complex">View details &raquo;</a></p>
+  </div>
+	
+	<div class="span4">
+       <h2>Organic</h2>
+       <p>This strategy describes a mental model for how to think about modeling when transitioning from SQL to NoSQL with Couchbase.</p>
+       <p><a class="btn" href="/strategies/organic">View details &raquo;</a></p>
+  </div>
+
+</div><!--/row-->
+
+
+<br /><br />
+
+<h1 style="color: #733">Design Patterns</h1>
+<div class="row-fluid">
+	<div class="span4">
+       <h2>Counter-ID</h2>
+       <p>This very common pattern is based on an atomic counter that is used as an index, and a set of documents that uses the index in the key.</p>
+       <p><a class="btn" href="/patterns/counter_id">View details &raquo;</a></p>
+  </div><!--/span-->
+  <div class="span4">
+       <h2>Lookup</h2>
+       <p>When a single document can be referenced by a number of different ID's, the Lookup pattern is the ideal pattern. Users might have a username, email, FacebookID, and TwitterID, these can all be used to find and retrieve a user without the need for Views.</p>
+       <p><a class="btn" href="/patterns/lookup">View details &raquo;</a></p>
+  </div><!--/span-->
+</div><!--/row-->
+
+
+<br /><br />
+
+
+<h1 style="color: #733">Model Samples</h1>
+<div class="row-fluid">
+  <div class="span4">
+    <h2>Activity Stream</h2>
+    <p>You can use this simple model to create a site based stream of activities taken by users in your application or game, when you need it tailored to individual users or their graph, you can take this model and personalize it into a stream based on each user.</p>
+    <p><a class="btn" href="/models/activity_stream">View details &raquo;</a></p>
+  </div><!--/span-->
+  <div class="span4">
+    <h2>Product Catalog</h2>
+    <p>If you are modeling a product catalog, whether it's real or virtual goods, you can start with this simple model and grow the model based on additional complexity required.</p>
+    <p><a class="btn" href="/models/product_catalog">View details &raquo;</a></p>
+  </div><!--/span-->            
+</div><!--/row-->

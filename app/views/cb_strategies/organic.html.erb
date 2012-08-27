@@ -1,0 +1,69 @@
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/strategies">Strategies</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Organic</li>
+</ul>
+
+<br />
+<div class="page-header w60">
+  <h1>Organic Strategy
+		<small>Modeling the Organic Way</small>
+	</h1>
+	<br />
+	<p class="lead w80">This strategy describes a mental model for how to think about modeling when transitioning from SQL to NoSQL with Couchbase.</p>
+	<p>
+		Organic Modeling is an idea and a process. 
+		It's a process that occurs absolutely naturally to us, in a way, and it's an idea to make use of what occurs naturally to us.
+		Object Oriented Programming (OOP) was founded on this idea: that the world is made up of "things" and "actions." This is because we <em>think</em> this
+		way about the world around us. In OOP, we have a number of different
+		words we use equivalently, members and methods, objects and messages, but they all represent the same general concept: that the world is made up of
+		things and relationships/actions between or on those things. 
+		I am an author, I write words. You are a programmer, you write code. My chair is black, made of plastic, felt and foam, and it can roll, and I can adjust it's height. The zoo has cages, and animals live in them, we give them food, they make sounds, people pay to see them. Objects, things, Relationships, actions.
+	</p>
+	
+	<p>When creating a new application or a game, it quite often starts with a person, and this person does things, or needs things, takes actions, providing
+		or receiving information. Thinking about this is  just like sitting in a coffee shop and watching people come in, decide what to order, decide how to pay, 	
+		decide where to sit, or whether they should take out their iPad or their book. They are taking actions, and they are both consuming and creating data.
+		Depending on how far you want to go, you can see that they are releasing pheromones into the air, converting oxygen into carbon dioxide, they
+		are bringing in bits of dirt or dust from the sidewalk, or a piece of cat hair falling off their bag. They are exchanging currency, depleting
+		stock, they are transacting across systems with their credit card. It's almost innumerable the ways in which we are interacting constantly 
+		in our environment.
+	</p>
+	
+	<p>
+		So we are creating an application, and much like seeing what we saw in our coffee shop, we have an actor (a person) and we have actions. We have
+		data, and we have relationships. In the last few decades, when it came time to take our idea into digital form and make an application we have had to
+		take a very inorganic step when it came time to store data. SQL, while powerful, and very useful, forced us into <em>normalization</em>, for all kinds
+		of reasons. Normalization basically takes apart our organic idea and breaks it into pieces, these pieces become supersets of data in the form of tables 
+		and keys and foreign keys. But this isn't really how we think most of the time, this is the way we have <em>had</em> to think for a long time.
+	</p>
+	<p>
+		Let's return to our example: We think about someone buying a cup of coffee and sipping it. Pretty simple, but now we have to deal with the data of that 
+		thought: Person of All People Where 
+		Person.name is "Bob", insert Coffee of All Coffees where coffee = "French Roast." into Coffees_Consumed. This is the inorganic step that we have been 
+		forced to grow accustomed to, mostly due
+		to lack of other options, but in the last decade, our options have begun to grow. 
+	</p>
+	<p>
+		When NoSQL came around, it was a quiet revolution, with Couchbase being the most highly performant variety. But all NoSQL shares in the Organic Modeling
+		idea of keeping data together rather than in supersets. Now instead of inserting a record into the Coffees_Consumed table with a foreign key to the 
+		Users table for the user,
+		and a foreign key to the Coffees table for the coffee, we can simple create a document for the user called user::101::coffees_drank, and add the coffee
+		to an array in that document. When we want to pull that array of coffees that user has sipped, we don't have to do joins on ever larger tables, with 
+		cross indexes that take longer and longer to compute the more popular our application becomes. We simply retrieve the document for that User and look at 
+		that array. 
+		That's not to say we do away with ID's or patterns. 
+		One of the primary benefits of this new data structure and way of thinking is that it allows us to think Organically, and it is far more partition-able and scalable.		
+	</p>
+	<p>
+		This is a new way of thinking about data that is much more aligned with how we think in general, much like Object Oriented Programming was new to Procedural programming. The more we learn about it and use it, the more obvious that becomes.
+	</p>
+	
+		
+</div>
+
+<%= render :partial => "/layouts/comments" %>

@@ -1,0 +1,133 @@
+<% content_for :title, "Lookup Pattern (Multiple Channels to Retrieve a Document)" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Patterns</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Lookup</li>
+</ul>
+
+<br />
+<div class="page-header">
+  <h1>Lookup Pattern
+		<small>Multiple Channels to Retrieve a Document</small>
+	</h1>
+	<br />
+	<p class="lead w80">This pattern is a way to lookup a single document using multiple keys, like looking up a User by email, Facebook ID, TwitterID, username, etc.</p>
+</div>
+
+
+
+
+<h3>Primary Document</h3>
+<p>
+	First you have to key your original document with a predictable key, this pattern is often combined with the <a href="/patterns/counter_id">Counter-ID</a> pattern.
+</p>
+<pre class="prettyprint linenums lang-rb">
+# setup connection
+c = Couchbase.new		# => setup default connection
+
+c.set("user::count", 100)		# => initialize counter to 100
+
+new_id = c.incr("user::count")	# => increment counter, new_id = 101
+
+user_name = "John Smith"
+user_username = "johnsmith"
+user_email = "jsmith@domain.com"
+user_fb = "123938329"
+
+# save User to Couchbase
+user_doc = c.add("user::#{new_id}", { 
+	:uid => new_id, 
+	:type => "user", 
+	:name => user_name, 
+	:email => user_email, 
+	:fbid => user_fb 
+	})
+</pre>
+
+<br /><br />
+
+
+<h3>Create Reference Documents</h3>
+<p class="w70">
+	Using the other unique references, in this case username, email and facebook, create keys who's value is the primary document key. 
+	For this User, it's the uid (which was generated through the atomic counter using the Counter-ID pattern) <br />
+	reference_doc = [unique key => uid]
+</p>
+<pre class="prettyprint linenums lang-rb">
+# using same variables from above for the user's data
+	
+# add reference document for username
+c.add("username::#{user_username.downcase}", new_id)	# => save lookup document, with document key = "username::johnsmith" => 101
+
+# add reference document for email
+c.add("email::#{user_email.downcase}", new_id)		# => save lookup document, with document key = "email::jsmith@domain.com" => 101
+
+# add reference document for Facebook ID
+c.add("fb::#{user_fb}", new_id)				# => save lookup document, with document key = "fb::123938329" => 101
+</pre>
+
+
+<br /><br />
+
+<h3>Get the Primary Document using any of the reference keys</h3>
+<p class="w70">
+	Retrieve the primary document based on any of the reference documents, whether you get the input from a login form,
+	or from a customer service call, or via email based support. Using this pattern you can lookup the User via many different user properties.
+</p>
+<pre class="prettyprint linenums lang-rb">
+
+user_username = params["username"]
+
+# retrieve by username
+user_id = c.get("username::#{user_username.downcase}")	# => get the user_id   # => 101
+user_hash = c.get("user::#{user_id}")			# => get the primary User document (key = user::101)
+
+puts user_hash
+# => { "uid" => 101, "type" => "user", "name" => "John Smith", "email" => "jsmith@domain.com", "fbid" => "123938329" }
+
+user_email = params["email"]
+
+# retrieve by email
+user_id = c.get("email::#{user_email.downcase}")	# => get the user_id  # => 101
+user_hash = c.get("user::#{user_id}")			# => get the primary User document (key = user::101)
+
+
+user_fb = auth.uid
+
+# retrieve by Facebook ID
+user_id = c.get("fb::#{user_fb}")			# => get the user_id  # => 101
+user_hash = c.get("user::#{user_id}")			# => get the primary User document (key = user::101)
+
+</pre>
+
+
+<hr>
+
+
+<h3>Many Uses for this Pattern</h3>
+<div class="w80">
+<dl>
+	<dt>Creating unique internal identifier referenced by others</dt> 
+		<dd>
+			By Using the Counter-ID pattern, or another pattern you can create an internally used unique identifier, like a UID or an 
+			account number. Then by creating reference documents you can look users or other objects up through the references. 
+		</dd>
+	<dt>Using Categorical References</dt>
+		<dd>
+			If you have a product, let's say a Sharpie, keyed with "product::#{sku}" you can also create references 
+			by the product category by creating a key such as "category::markers::count" with a count, and adding products 
+			to that list by adding documents that point to the sku, like "category::markers::1" => { :product => "#{sku}" }.
+			This way you can lookup all "markers" in the category and pull the sku's (reference document) 
+			and then pull the products themselves (primary document).
+		</dd>
+</dl>
+</div>
+
+Combined with the <a href="/patterns/lookup">Counter-ID Pattern</a>, it can be the basis for many different models.
+
+<%= render :partial => "/layouts/comments" %>
+

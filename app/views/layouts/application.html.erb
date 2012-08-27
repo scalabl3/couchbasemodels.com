@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= (yield(:title).blank? ? "Learn Modeling Design Patterns" : yield(:title)).to_s + " - CouchbaseModels.com" %></title>
+	<%= stylesheet_link_tag    "application", :media => "all" %>
+  <%= javascript_include_tag "application" %>
+
+  <!-- stylesheet & javascript file for each controller, if it exists -->
+  <%= javascript_include_tag(params[:controller]) if FileTest.exists? ("#{Rails.root}/app/assets/javascripts/#{controller.controller_name}.js.erb") %>
+  <%= stylesheet_link_tag(params[:controller], {:media => "all"}) if FileTest.exists? ("#{Rails.root}/app/assets/stylesheets/#{controller.controller_name}.css.sass") %>
+
+  <!-- stylesheet & javascript file for each controller-action, if it exists -->
+  <%= javascript_include_tag(controller.controller_name + "-" + controller.action_name) if FileTest.exists? ("#{Rails.root}/app/assets/javascripts/#{controller.controller_name}-#{controller.action_name}.js.erb") %>
+  <%= stylesheet_link_tag(controller.controller_name + "-" + controller.action_name, {:media => "all"}) if FileTest.exists? ("#{Rails.root}/app/assets/stylesheets/#{controller.controller_name}-#{controller.action_name}.css.sass") %>
+
+	<script type="text/javascript" src="http://use.typekit.com/blm5gxs.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	
+  <%= csrf_meta_tags %>
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-33565184-1']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+</head>
+<body data-spy="scroll" id="<%= controller.controller_name %>-<%= controller.action_name %>" class="<%= controller.controller_name %>">
+<div id="header"><%= render :partial => '/layouts/header' %></div>	
+
+<div id="content-container">
+	<div class="container-fluid">
+	      <div class="row-fluid">
+	        <%= render :partial => "/layouts/sidenav" %>
+					<div class="span10">
+					  <% if flash[:error] -%>
+              <div class='error'><%=h flash[:error] %></p>
+            <% end -%>
+            <% if flash[:notice] -%>
+              <div class='alert alert-info fade in'>
+                <button type="button" class="close" data-dismiss="alert">x</button>
+                <%=h flash[:notice] %>
+              </div>
+            <% end -%>
+						<%= yield %>
+					</div>
+				</div><!--/row-->
+				<hr>
+
+			  <footer>
+			    <%= render :partial => '/layouts/footer' %>
+			  </footer>
+	</div>
+</div>
+<script type="text/javascript">
+  var page = "<%= request.fullpath[1..-1].gsub("/", "-") %>";
+  !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+</script>
+</body>
+</html>

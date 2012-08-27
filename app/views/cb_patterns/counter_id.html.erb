@@ -1,0 +1,112 @@
+<% content_for :title, "Counter-ID Pattern (Document Lists with ID-Key)" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Patterns</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Counter-ID</li>
+</ul>
+
+<br />
+<div class="page-header">
+  <h1>Counter-ID Pattern
+		<small>Document Lists with ID-Key</small>
+	</h1>
+	<br />
+	<p class="lead w80">This pattern is a combination of an always-incrementing atomic counter (used as an ID), and a set of documents that use the ID in the key.</p>
+</div>
+
+
+
+
+<h3>ID Initialization</h3>
+<p>
+	First you have to setup the counter-id, this can be done on app initialization. <br />
+	There are some alternatives depending on the SDK you are using.
+</p>
+<pre class="prettyprint linenums lang-rb">
+# initialize the counter
+c = Couchbase.new		# => setup default connection
+c.set("user::count", 0)		# => initialize counter
+</pre>
+
+<br /><br />
+
+
+<h3>Increment on Create</h3>
+<p>
+	Each time you want to create a new item, you increment the counter-id and use it as a component of the key.
+</p>
+<p class="w70">
+	<i class="icon-eye-open"></i> Follow the variable <strong>new_id</strong> through this Ruby code to see how <em>it is initialized</em>, and <em>used as a value</em>, and <em>used in the document key</em>.
+</p>
+<pre class="prettyprint linenums lang-rb">
+# retrieve the latest (so you see incr adds one...)
+c.get("user::count")				# => 3
+
+# increment the counter-id
+new_id = c.incr("user::count")			# => new_id = 4
+
+# store the counter-id as a self-reference
+user_hash = {
+	:uid => new_id, 
+	:username => "jsmith", 
+	:firstname => "John", 
+	:lastname => "Smith" 
+}
+
+# create the document with the counter-id and hash
+c.add("user::#{new_id}", user_hash)		# => save new user, with document key = "user::4"
+</pre>
+
+
+<br /><br />
+
+<h3>Get the Document by ID</h3>
+<p class="w70">
+	Retrieve the document based on the ID. <br />
+	In this case we are just getting the latest user created, but it could be anywhere from
+	counter-id = 1 to the current value of the counter-id (in this case 4).
+</p>
+<pre class="prettyprint linenums lang-rb">
+# retrieve the latest
+latest_user = c.get("user::count")		# => latest_user = 4
+
+# retrieve the document with the index
+user_info = c.get("user::#{latest_user}")	# => retrieve user document
+
+puts user_info
+# => { "uid" => 4, "username" => "jsmith", "firstname" => "John", "lastname" => "Smith" }
+</pre>
+
+
+<hr>
+
+
+<h3>Many Uses for this Pattern</h3>
+<div class="w80">
+<dl>
+	<dt>Creating an index based list</dt> 
+		<dd>
+			This list has individual items that are keyed based on the counter-id, useful for things like comments,
+			users, products, and any other list of items that grows infinitely, or where an array would grow too big.
+		</dd>
+	<dt>Globally Referenced Documents</dt>
+		<dd>
+			Each document keyed with the atomic counter has a unique key, so it can be used as a reference in other documents, 
+			this is also why it functions differently than an array of items stored in json.
+		</dd>
+	<dt>Guaranteed Unique Key</dt>
+		<dd>
+			By using an always-incrementing atomic counter, each key generated using it is guaranteed to be unique. 
+			Atomic counters are the fastest to get/set/incr/decr, and their operations are always executed in order. 
+		</dd>
+</dl>
+</div>
+
+Combined with the <a href="/patterns/lookup">Lookup Pattern</a>, it can be the basis for many different models.
+
+<%= render :partial => "/layouts/comments" %>
+
