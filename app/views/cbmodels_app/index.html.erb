@@ -11,8 +11,10 @@
 					Learning any new technology requires learning how to think in that technology. This site is dedicated to building that mental model of how
 					things work, using patterns for your structure, and learn modeling by example.
 				</p>
-				<h2>This site is a work in progress, there are blank pages, but I am filling them in quickly, please check back and likely I'll have filled it in within days.</h2>
-	   		<p><a href="/about" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+	   		<p>
+					<a href="/couchbase" class="btn btn-primary btn-medium">About Couchbase &raquo;</a>
+					<a href="/about" class="btn btn-primary btn-medium">About this Site &raquo;</a>
+				</p>
 			</div>
 	 </div>
 	</div>
@@ -45,7 +47,7 @@
 
 <br /><br />
 
-<h1 style="color: #733">Design Patterns</h1>
+<h1 style="color: #733">Key-Value Patterns</h1>
 <div class="row-fluid">
 	<div class="span4">
        <h2>Counter-ID</h2>
@@ -57,6 +59,12 @@
        <p>When a single document can be referenced by a number of different ID's, the Lookup pattern is the ideal pattern. Users might have a username, email, FacebookID, and TwitterID, these can all be used to find and retrieve a user without the need for Views.</p>
        <p><a class="btn" href="/patterns/lookup">View details &raquo;</a></p>
   </div><!--/span-->
+  <div class="span4">
+       <h2>Auto Versioning</h2>
+       <p>This pattern abstracts write operations through a common method to enable easy auto-versioning of individual keys. 
+     	   This can be useful if you want a document archive on particular keys.</p>
+       <p><a class="btn" href="/patterns/autoversioning">View details &raquo;</a></p>
+  </div><!--/span-->  
 </div><!--/row-->
 
 

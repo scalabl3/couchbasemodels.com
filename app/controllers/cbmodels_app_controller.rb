@@ -7,4 +7,10 @@ class CbmodelsAppController < ApplicationController
   
   def couchbase
   end
+  
+  def content
+  end
+  
+  def scalabl3
+  end
 end

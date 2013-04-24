@@ -1,8 +1,18 @@
 CouchbaseModels::Application.routes.draw do
-  
+
+  get '/sitemap.xml' => 'sitemap#index'
+
   controller :api do
     get "/api/pull_comments" => :pull_comments
     post "/api/submit_comment" => :submit_comment
+  end
+
+  controller :cb_indexes do
+    get "indexes" => :index
+    get "indexes/anatomy" => :anatomy
+    get "indexes/anatomy_reduce" => :anatomy_reduce
+    get "indexes/examples" => :mr_examples
+    get "indexes/elastic_search" => :elastic_search
   end
   
   controller :cb_strategies do
@@ -23,19 +33,25 @@ CouchbaseModels::Application.routes.draw do
     get '/patterns' => :index
     get '/patterns/counter_id' => :counter_id
     get '/patterns/lookup' => :lookup
+    get '/patterns/smart_cas' => :smart_cas
+    get '/patterns/autoversioning' => :autoversioning
   end
   
   controller :user do    
-    post '/comment' => :make_comment
-    get  '/comments' => :retrieve_comments
-    get '/logout' => :logout
+    post  '/comment' => :make_comment
+    get   '/comments' => :retrieve_comments
+    get   '/logout' => :logout
     match '/auth/:provider/callback' => :authenticate
+		get   '/fix' => :fix_uid
+		get   '/reset_comments' => :reset_comments
     #get "/user/authenticate" => :authenticate
   end
   
   controller :cbmodels_app do
     get '/about' => :about
     get '/couchbase' => :couchbase
+    get '/content' => :content
+    get '/scalabl3' => :scalabl3
   end
   
   root :to => 'cbmodels_app#index'

@@ -40,6 +40,9 @@ module ModelGlobal
     ModelGlobal.find_user_by_github_id(github_id, get_user_object)
   end
 
+  def find_comment_by_page_and_id(page_id, comment_id)
+    ModelGlobal.find_comment_by_page_and_id(page_id, comment_id)
+  end
 
   # returns nil if the user isn't found, by default it returns a user object, set get_user_object to false if you just want the uid
   def find_user_by_uid(uid, get_user_object = true)
@@ -71,7 +74,7 @@ module ModelGlobal
       if get_user_object
         uid = get_document("gh::#{github_id}")
         u = nil
-        u = User.new ({ :retrieve => true, :uid => uid }) if uid
+        u = User.new({ :retrieve => true, :uid => uid }) if uid
         u
       else
         get_document("gh::#{github_id}")
@@ -86,12 +89,20 @@ module ModelGlobal
 
       if get_user_object
         u = get_document("u::#{uid}")
-        u = User.new ({ :retrieve => true, :uid => uid }) if u
+        u = User.new({ :retrieve => true, :uid => uid }) if u
         u
       else
         get_document("u::#{uid}")
       end
     end
+    
+    def find_comment_by_page_and_id(page_id, comment_id)
+      c = get_document("p::#{page_id}::#{comment_id}")
+      return nil unless c
+      c = Comment.new({ :retrieve => true, :page_id => page_id, :comment_id => comment_id })
+      c
+    end
+    
 
     def get_multiple_users_by_uid(uids, get_user_objects = true)
       uids.each_with_index do |u, i|
@@ -103,7 +114,7 @@ module ModelGlobal
         uid_docs = get_documents(uids)
         users = []
         uid_docs.each_with_index do |doc, i|
-          users[i] = User.new ( uid_docs[i] ) if uid_docs[i]
+          users[i] = User.new( uid_docs[i] ) if uid_docs[i]
         end
         users
       else
@@ -181,7 +192,7 @@ module ModelGlobal
 
       superusers = []
       users.each do |uid|
-        u = User.new ({ :retrieve => true, :uid => uid })
+        u = User.new({ :retrieve => true, :uid => uid })
         superusers.push(u)
       end
       superusers

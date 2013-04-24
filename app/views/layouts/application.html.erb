@@ -30,6 +30,11 @@
 	  })();
 
 	</script>
+	<%= (yield(:keywords).blank? ? "" : '<meta name="keywords" content="' + yield(:keywords).to_s + '" />').to_s.html_safe %>
+	<%= (yield(:description).blank? ? "" : '<meta name="keywords" content="' + yield(:description).to_s + '" />').to_s.html_safe %>
+	
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body data-spy="scroll" id="<%= controller.controller_name %>-<%= controller.action_name %>" class="<%= controller.controller_name %>">
 <div id="header"><%= render :partial => '/layouts/header' %></div>	

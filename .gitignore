@@ -26,3 +26,5 @@ Gemfile.lock
 
 # Ignore App Settings File
 yetting.yml
+yetting.yml.local
+yetting.yml.production

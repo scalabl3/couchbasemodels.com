@@ -1,3 +1,6 @@
+<% content_for :title, "Key-Value Patterns in Couchbase" %>
+<% content_for :keywords, "id, key, value, key-value, counter, atomic, atomic counter, design pattern, pattern, index id, id, couchbase" %>
+<% content_for :description, "Key-Value design patterns in Couchbase" %>
 <ul class="breadcrumb">
   <li>
     <a href="/">Home</a> <span class="divider">/</span>
@@ -5,7 +8,7 @@
   <li class="active">Patterns</li>
 </ul>
 
-<h1>Patterns</h1>
+<h1>Key-Value Patterns</h1>
 
 
 <br /><br />
@@ -13,8 +16,17 @@
 <h2><a href="/patterns/counter_id">Counter-ID</a> <small>Document Lists with ID-Key</small></h2>
 <p class="w60">This pattern is a combination of an always-incrementing atomic counter (used as an ID), and a set of documents that use the ID in the key.</p>
 
-
 <br /><br />
 
 <h2><a href="/patterns/lookup">Lookup</a> <small>Multiple Channels to Retrieve a Document</small></h2>
 <p class="w60">This pattern is a way to lookup a single document using multiple keys, like looking up a User by email, Facebook ID, TwitterID, username, etc.</p>
+
+<br /><br />
+
+<h2><a href="/patterns/autoversioning">Auto-Versioning</a> <small>Automatically Keep Document Versions on a Particular Key</small></h2>
+<p class="w60">This pattern abstracts write operations through a common method to enable easy auto-versioning of individual keys.</p>
+
+<br /><br />
+
+<h2><a href="/patterns/smart_cas">Smart CAS</a> <small>Conditionally Retry Compare-And-Swap (CAS) operations</small></h2>
+<p class="w60">This pattern is a way to detect collisions at the JSON key level, and retry CAS operations if the json key being modified has not changed.</p>

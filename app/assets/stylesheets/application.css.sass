@@ -5,6 +5,31 @@
 @import bootstrap-responsive
 @import bourbon
 
+
+  
+$navbar-color: #555
+$navbar-highlight: #555
+$navbar-lowlight: #222
+
+.navbar .nav > .active > a, .navbar .nav > .active > a:hover, .navbar .nav > .active > a:focus 
+  background: black
+  text-decoration: underline
+  color: #F2F2F2
+  font-weight: normal
+  text-shadow: none
+  border-bottom: 2px solid lighten(#08c, 20%)
+  text-decoration: none
+  
+.navbar .nav > li > a
+  color: #F2F2F2
+  font-weight: normal
+  text-shadow: none
+
+.navbar .nav > li > a:hover
+  color: lighten(#08c, 20%)
+  font-weight: normal
+  text-shadow: none
+
 body 
   padding-top: 60px
   padding-bottom: 40px
@@ -30,6 +55,43 @@ body
 .w80
   width: 80%
   
+.f12
+  font-size: 12px
+  line-height: 16px
+
+.f13
+  font-size: 13px
+  line-height: 17px
+  
+.f14
+  font-size: 14px
+  line-height: 18px
+  
+.f15
+  font-size: 15px
+  line-height: 19px
+    
+.f16
+  font-size: 16px
+  line-height: 20px
+  
+.f17
+  font-size: 17px
+  line-height: 21px
+    
+.f18
+  font-size: 18px
+  line-height: 22px
+  
+.f19
+  font-size: 19px
+  line-height: 23px
+  
+.f20
+  font-size: 20px
+  line-height: 24px
+
+  
 h1.comment-title
   font-family: 'kepler-std-n3', 'kepler-std', 'lemonde-journal', baskerville, 'baskerville', 'palatino linotype', palatino, georgia, serif
   font-weight: 300
@@ -41,13 +103,70 @@ dt
 dd
   margin-bottom: 15px
 
+.brand
+  text-shadow: 0 1px 0 $navbar-lowlight !important
+  
 .navbar-inner
+  padding: 1px
   border-top-left-radius: 0px
   border-top-right-radius: 0px
+  background-color: $navbar-color
+  background-image: -moz-linear-gradient(top, $navbar-highlight, $navbar-lowlight)
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from($navbar-highlight), to($navbar-lowlight))
+  background-image: -webkit-linear-gradient(top, $navbar-highlight, $navbar-lowlight)
+  background-image: -o-linear-gradient(top, $navbar-highlight, $navbar-lowlight)
+  background-image: linear-gradient(to bottom, $navbar-highlight, $navbar-lowlight)
+
+.nav-header
+  color: darken(#0088CC, 15%)
   
 .hero-unit
-  padding: 50px
+  padding: 20px
   
 .alert
   #color: darken(#C09853, 10%)
+    
+div.page-header
+  h1,h2,h3,h4,h5,h6
+    font-family: "museo-sans",sans-serif
+    font-weight: 700 !important
+  h1
+    font-size: 36px !important
+    
+div.comment
+  margin-bottom: 3px
+  +clearfix
+  
+  div
+    border: 0px red dashed
+
+  img 
+    width: 50px
+    height: 50px
+    margin: 0 10px
+  
+  div.comment-content-container
+    padding: 10px
+    border: 1px solid #ccc  
+    +border-radius(5px)
+  
+  div.comment-content-container:not(.waiting-for-approval)
+    background: #fafafa
+  
+  div.waiting-for-approval
+    background: #fdf8f8
+    
+  div.comment-user
+    font-size: 14px
+    font-weight: bold
+    color: #5398C0
+
+  div.comment-text
+    font-size: 16px
+    padding-top: 4px
+    
+  div.comment-time
+    font-size: 12px
+    color: #bbb
+    
 

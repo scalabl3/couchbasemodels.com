@@ -1,0 +1,27 @@
+<% content_for :title, "Couchbase Indexes" %>
+<% content_for :keywords, "index, primary index, secondary index, indexing, couchbase" %>
+<% content_for :description, "Primary and Secondary Indexes in Couchbase" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Indexes</li>
+</ul>
+
+<div class="page-header">
+  <h1>Document Indexes & Querying in Couchbase</h1>
+</div>
+
+
+<br /><br />
+
+<h2><a href="/indexes/anatomy">Incremental Map-Reduce Indexes (Views)</a> <small>Index fields of JSON Documents</small></h2>
+<p class="w60">Using Map-Reduce, you can create indexes for different documents and fields within JSON documents. Because it is incremental,
+  it is very fast for updates and growth of indexes. </p>
+
+
+<br /><br />
+
+<h2><a href="/indexes/elastic_search">Elastic Search Integration</a> <small>Full Text Search for JSON Documents</small></h2>
+<p class="w60">Using the XDCR (Cross Data Center Replication) connector you can automate the population of a decoupled (Lucene-based) Elastic Search cluster and do full text searching and custom indexing.</p>
+

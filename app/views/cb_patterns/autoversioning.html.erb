@@ -1,0 +1,168 @@
+<% content_for :title, "Auto-Versioning Pattern (Keep Document Versions Automajically)" %>
+<% content_for :keywords, "auto versioning, versioning, automatic, auto, keeping versions, pattern, model, key-value, key, value, couchbase" %>
+<% content_for :description, "Auto-Versioning pattern in Couchbase, keep track of document versions for a specified Document" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Patterns</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Auto-Versioning</li>
+</ul>
+
+<div class="page-header">
+  <h1>Auto-Versioning Pattern
+		<small>Automatically Keep Document Versions on a Particular Key</small>
+	</h1>
+	<br />
+	<p class="lead w80">This pattern abstracts write operations through a common method to enable easy auto-versioning of individual keys. 
+	   This can be useful if you want a document archive on particular keys (but not necessarily all keys). </p>
+</div>
+
+<h3>DocumentStore Module</h3>
+<p class="w70">
+	By abstracting Couchbase operations in a module, you can add your own tidbits to it and create usage patterns.
+	In this case we are adding three operations, initialize_document, get_document, add_document and replace_document.
+</p>
+<pre class="prettyprint linenums lang-rb">
+module DocumentStore
+
+  # Module Constant for Couchbase Connection (Couchbase.bucket is actually the same idea)
+  CB = Couchbase.bucket
+  
+  def initialize_document
+    return nil unless key
+    CB.quiet = false
+    doc = DocumentStore.get_document( key )
+    (value.is_a?(Fixnum) || value.is_a?(Integer) ? CB.set( key, value ) : CB.add( key, value )) unless doc
+  rescue Exception => e
+  end
+  
+  # get a document
+  def get_document(key, args = {})
+    CB.get(key, args)
+  end
+  
+  # add a new document
+  def add_document(key, value, args = {})
+    CB.add(key, value, args)
+  end
+  
+  def replace_document(key, value, args = {})
+
+     if (args[:auto_version] || (value.is_a? Hash ? value[:auto_version] : false))
+
+       # create version counter-id if it doesn't exist
+       version_tracker_key = key + "::version"
+       initialize_document ( version_tracker_key, 1 )
+
+       # increment the document versions
+       current_version = increment_atomic_count(version_tracker_key)
+
+       # if the value is a Hash (i.e. Document) then add the current_version to the doc
+       # this also assumes that you don't use the JSON key "auto_version"!
+       if value.is_a? Hash
+          value[:auto_version] = current_version
+       end
+
+       # if there are previous versions:
+       # save current existing doc as a "::version::n" with counter-id appended and a timestamp
+       if current_version > 1
+            doc = get_document(key)
+            doc[:version_stamp] = Time.now.getUtc
+            doc[:auto_version] = current_version - 1
+            add_document(key + "::version::#{current_version - 1}", doc)
+       end
+
+     end
+
+     # Finally, do the Couchbase Replace Operation
+     CB.replace(key, value, args)
+  end
+end
+</pre>
+
+<h3>Create A Simple Class</h3>
+<p class="w70">
+	By abstracting Couchbase operations in a module, you can add your own tidbits to it and create usage patterns.
+	In this case we are adding three operations, initialize_document, get_document, add_document and replace_document.
+</p>
+<pre class="prettyprint linenums lang-rb">
+class VersionTest
+  include DocumentStore
+  
+  attr_accessor :my_doc
+  
+  # create a document for the class if it doesn't exist
+  def initialize(attr = { :txt => "my first text" })
+    @mydoc = attr        
+    initialize_document("mydoc", mydoc)
+  end
+  
+  # get the stored text
+  def get_text
+    doc = get_document("mydoc")
+    doc[:txt]
+  end
+
+  # update the stored text (saves existing value as a previous version)
+  def update_text(text)
+    doc = get_document("mydoc")
+    doc[:txt] = text
+    replace_document("mydoc", doc, {:auto_version => true})
+  end
+  
+  # return the number of versions so far
+  def num_versions
+    doc = get_document("mydoc::version")
+  end
+end
+</pre>
+
+
+<h3>Play with it!</h3>
+<pre class="prettyprint linenums lang-rb">
+vt = VersionTest.new
+
+vt.update_text("my_second_text")
+  # mydoc::version = 2
+  # mydoc::version::1 = { "txt" => "my_first_text", "auto_version" => 1, "auto_version_stamp" => "10/1/2012 20:35" }
+  # mydoc = { "txt" => "my_second_text", "auto_version" => 2  }
+  
+vt.update_text("my_third_text")
+  # mydoc::version = 3
+  # mydoc::version::1 = { "txt" => "my_first_text", "auto_version" => 1, "auto_version_stamp" => "10/1/2012 20:35" }
+  # mydoc::version::2 = { "txt" => "my_second_text", "auto_version" => 2, "auto_version_stamp" => "10/1/2012 20:40" }
+  # mydoc = { "txt" => "my_third_text", "auto_version" => 3 }
+  
+
+vt.update_text("my_fourth_text")
+  # mydoc::version = 4
+  # mydoc::version::1 = { "txt" => "my_first_text", "auto_version" => 1, "auto_version_stamp" => "10/1/2012 20:35" }
+  # mydoc::version::2 = { "txt" => "my_second_text", "auto_version" => 2, "auto_version_stamp" => "10/1/2012 20:40" }
+  # mydoc::version::3 = { "txt" => "my_third_text", "auto_version" => 3, "auto_version_stamp" => "10/1/2012 20:45" }
+  # mydoc = { "txt" => "my fourth text", "auto_version" => 4 }
+
+</pre>
+
+
+<h3>Adding Expiration to Versions</h3>
+<p class="w70">
+	Just for kicks, since we have simply wrapped a Couchbase standard operation through the gem, and we designed it so 
+	that args still pass through, you can add an expiration time if you want, or do other creative things. 
+</p>
+<pre class="prettyprint linenums lang-rb">
+class VersionTest
+  def update_text(text)
+    doc = get_document("mydoc")
+    doc[:txt] = text
+    replace_document("mydoc", doc, {:auto_version => true, :ttl => 30.days})
+  end
+end
+
+</pre>
+
+
+<%= render :partial => "/layouts/comments" %>
+

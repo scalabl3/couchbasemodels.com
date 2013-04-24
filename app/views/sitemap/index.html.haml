@@ -1,0 +1,38 @@
+- base_url = "http://#{request.host_with_port}"
+!!! XML
+%urlset{:xmlns => "http://www.sitemaps.org/schemas/sitemap/0.9"}  
+  - @other.each do |page|
+    %url 
+      %loc=         base_url + page[:url]
+      %lastmod=     page[:last_modified]
+      %changefreq=  page[:change_frequency]
+      %priority=    page[:priority]
+
+  - @indexes.each do |page|
+    %url 
+      %loc=         base_url + page[:url]
+      %lastmod=     page[:last_modified]
+      %changefreq=  page[:change_frequency]
+      %priority=    page[:priority]
+
+  - @models.each do |page|
+    %url 
+      %loc=         base_url + page[:url]
+      %lastmod=     page[:last_modified]
+      %changefreq=  page[:change_frequency]
+      %priority=    page[:priority]
+
+
+  - @indexes.each do |page|
+    %url 
+      %loc=         base_url + page[:url]
+      %lastmod=     page[:last_modified]
+      %changefreq=  page[:change_frequency]
+      %priority=    page[:priority]
+
+  - @indexes.each do |page|
+    %url 
+      %loc=         base_url + page[:url]
+      %lastmod=     page[:last_modified]
+      %changefreq=  page[:change_frequency]
+      %priority=    page[:priority]

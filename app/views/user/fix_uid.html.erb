@@ -1,0 +1,21 @@
+<h1>Fixing UID's</h1>
+
+<%
+	if @user_list
+		@user_list.each do |u|
+%>
+			<pre><%= u.inspect %></pre><br />
+<%	
+		end
+	end
+%>
+
+<%
+	if @github_refs
+		@github_refs.each do |u|
+%>
+			<pre><%= u.inspect %></pre><br />
+<%	
+		end
+	end
+%>

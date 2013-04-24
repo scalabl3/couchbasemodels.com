@@ -6,10 +6,9 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </a>
-      <a href="/couchbase"><img class="pull-left" src="/assets/couchbase_logo_red_circle_30x30.png" style="width: 30px;height: 30px;margin: 5px 8px 5px 0px" /></a><a class="brand" href="/" style="color: white;">Couchbase Models</a>
-      <div class="btn-group pull-right">
-				<% if session[:user] %>
-					
+      <a href="/couchbase"><img class="pull-left" src="/assets/couchbase_logo_red_circle_30x30.png" style="width: 30px;height: 30px;margin: 5px 8px 5px 0px" /></a><a class="brand" href="/" style="color: white;">Couchbase Models</a>      
+				<% if session[:user] %>					
+ 				<div class="dropdown pull-right" style="margin-top: -2px;">
 	        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
 	          <img src="<%= session[:avatar] %>" style="border: 0;width: 19px;height:19px;margin-right: 4px;" /> <%= session[:username] %>
 	          <span class="caret"></span>
@@ -17,16 +16,13 @@
 	        <ul class="dropdown-menu">
 	          <li><a href="/logout">Sign Out</a></li>
 	        </ul>
+				 </div>
 				<% else %>
-				  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-	          <i class="icon-user"></i> Signin&nbsp;with&nbsp;Github
-	          <span class="caret"></span>
-					</a>
-					<ul class="dropdown-menu">
-						<li><a href="/auth/github">Signin</a></li>
-					</ul>
+				 <div class="pull-right" style='margin-top: 8px;'>
+	          <i class="icon-user"></i>&nbsp;<a href="/auth/github">Signin&nbsp;with&nbsp;Github</a>
+				</div>
 				<% end %>	      
-      </div>
+      
       <div class="pull-right">
         <div style="padding-top: 9px">
           <a href="https://twitter.com/share" class="twitter-share-button" data-related="scalabl3">Tweet</a>

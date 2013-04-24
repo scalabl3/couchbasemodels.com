@@ -2,23 +2,23 @@ class Comment < ModelBase
   include DocumentStore
   include ModelGlobal
   include ErrorCodes
+  include ApiHelper
   
-  fattrs :uid, :page_id, :comment_text, 
+	fattr :type, :default => self.to_s.downcase
+	fattr :approved, :default => false
+  fattrs :uid, :page_id, :comment_id, :comment_text
+  fattr :timestamp => Time.now.utc.to_i
   
   def initialize(attr = {})
-    attr = Map.new(attr)
+    attr = Map.new(attr) unless attr.is_a? Map
     super
     fattrs.each_with_index{|a,i| send "#{a}!"} # initialize all fattrs so they exist, *must be initialized*
     
     # load passed in parameter attributes
     load_parameter_attributes attr
 
-    # Typically in Couchbase you want to create document and then modify instead of waiting for save method at the end
-    # we pass in :create => true to create this user, then we can modify the user later
     # We'll make sure it's valid by checking to see if the user already exists
     if attr.has_key_and_value?(:create)
-      #raise "trying to create user -- user exists already (via facebook_id)" if @facebook_id && User.find_user_by_facebook_id(@facebook_id)
-      #raise "trying to create user -- user exists already (via email)" if @email && User.find_user_by_email(@email)
       #raise "trying to create user -- user exists already (via uid)" if @uid && User.find_user_by_uid(@uid)
       create_new
     end
@@ -37,14 +37,12 @@ class Comment < ModelBase
   
   private
 
-  def create_doc_keys
-    unless @doc_keys_setup
+  def create_doc_keys(reset = false)
+    if (@doc_keys_setup == false || reset)
       @docs = {}
 
-      @docs[:user] = "u::#{uid}"
-      @docs[:github_ref] = "gh::#{@github_id}"
-      @docs[:num_comments_made]  = "u::#{uid}::num_comments_made"
-      @docs[:language_pref] = "u::#{uid}::language_pref"
+      @docs[:comment] = "p::#{@page_id}::#{@comment_id}"
+      @docs[:num_comments]  = "p::#{@page_id}::num_comments"
 
       @doc_keys_setup = true
 
@@ -60,12 +58,13 @@ class Comment < ModelBase
             get_document(@docs[method])
           end
 
+					# I don't want to expose increment
+					
           # create increment method for document symbol that starts with num_
           # i.e. def increment_site_views
-          self.class.send(:define_method, method.to_s.gsub("num", "increment").to_sym) do
-            increase_atomic_count(@docs[method])
-          end
-
+          #self.class.send(:define_method, method.to_s.gsub("num", "increment").to_sym) do
+          #  increase_atomic_count(@docs[method])
+          #end
 
         end
       end
@@ -77,45 +76,43 @@ class Comment < ModelBase
   def create_default_docs
     create_doc_keys unless doc_keys_setup
 
-    if @uid && @github_id
+    if @comment_id && @uid && @page_id
 
-      initialize_document(@docs[:user], self.to_hash)
+      initialize_document(@docs[:comment], self.to_hash)
 
-      # initialize if we have a facebookID and userID, simple for now
-      initialize_document(@docs[:github_ref], @github_id)
-      initialize_document(@docs[:language_pref], "ruby")
-
+      pubnub_message({ :message => "comment#create_new", :key => @docs[:comment], :values => get_document(@docs[:comment]) } )
+      
       ### STATS, initialize all docs that start with num_ with a count of 0
       @docs.each do |doc_key,v|
         if doc_key.to_s.starts_with?("num_")
           initialize_document(@docs[doc_key], 0)
         end
       end
-
+    else
+      pubnub_message({ :message => "didn't create new comment doc"})
     end
   end
+
 
   # create a new user and associated documents
   def create_new
-    Rails.logger.debug("CREATE_NEW")
-    @uid = get_new_uid
-    Rails.logger.debug(@uid)
+    create_doc_keys(true)
+    initialize_document(@docs[:num_comments], 0)
+
+		@comment_id = increase_atomic_count(@docs[:num_comments])
+
+		create_doc_keys(true)
+
     create_default_docs
-    if @super_user
-      add_super_user(@uid)
-    end
   end
 
   def load_persisted
-    if @github_id
-      @uid = get_document("gh::#{@github_id}")
-    end
-
-    if @uid
-      load_parameter_attributes get_document("u::#{@uid}")
+    if @page_id && @comment_id
+			create_doc_keys(true)
+      load_parameter_attributes get_document(@docs[:comment])
       create_default_docs
     else
-      raise "User Not Found"
+      raise "Comment Document Not Found (page_id and/or comment_id not supplied)"
     end
   end
   

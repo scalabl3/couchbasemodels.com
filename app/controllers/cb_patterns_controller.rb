@@ -7,4 +7,10 @@ class CbPatternsController < ApplicationController
 
   def lookup
   end
+  
+  def smart_cas
+  end
+  
+  def autoversioning
+  end
 end

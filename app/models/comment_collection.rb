@@ -5,8 +5,10 @@ class CommentCollection < ModelBase
   
   fattrs :page_id
   
+  attr_reader :comment_list
+  
   def initialize(attr = {})
-    attr = Map.new(attr)
+    attr = Map.new(attr) unless attr.is_a? Map
     super
     fattrs.each_with_index{|a,i| send "#{a}!"} # initialize all fattrs so they exist, *must be initialized*
     
@@ -30,7 +32,7 @@ class CommentCollection < ModelBase
   def create_doc_keys
     unless @doc_keys_setup
       @docs = {}
-      @docs[:num_comments] = "#{@page_id}::comment_count"
+      @docs[:num_comments] = "p::#{@page_id}::num_comments"
       @doc_keys_setup = true
 
       # Since we have a lot of stats keys, use some metaprogramming to define the methods for get and increment
@@ -44,11 +46,13 @@ class CommentCollection < ModelBase
             get_document(@docs[method])
           end
 
+          # I don't want to expose increment
+          
           # create increment method for document symbol that starts with num_
           # i.e. def increment_site_views
-          self.class.send(:define_method, method.to_s.gsub("num", "increment").to_sym) do
-            increase_atomic_count(@docs[method])
-          end
+          #self.class.send(:define_method, method.to_s.gsub("num", "increment").to_sym) do
+          #  increase_atomic_count(@docs[method])
+          #end
 
 
         end
@@ -80,6 +84,13 @@ class CommentCollection < ModelBase
 
   def load_persisted
     create_default_docs
+
+    @comment_list = []
+    num_comments.downto(1) do |i|
+      comment = find_comment_by_page_and_id(@page_id, i)
+      user = find_user_by_uid(comment.uid) if comment
+      @comment_list << { :user => user.github_username, :avatar => user.avatar_url, :comment_text => comment.comment_text, :timestamp => comment.timestamp, :approved => comment.approved } if comment && user
+    end
   end
   
   def add_comment

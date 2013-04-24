@@ -42,7 +42,7 @@ function pullComments() {
 
     },
     success: function(result) {
-      console.log('pull_comments():success');
+      console.log('pull_comments():success - ' + page);
       console.log(result);
 
       if (result.success == false) {
@@ -50,7 +50,18 @@ function pullComments() {
       }
       else {
         num_comments = parseInt(result.num_comments);
-				comments = result.comments;
+				$("div#comment-list").html("");
+				
+				if (num_comments > 0) {
+					comments = result.comment_list;				
+					comments.forEach(function(i){
+						console.log(i);
+						$("div#comment-list").append("<div class='comment'><div class='span1' style='text-align: center'><img src='" + i.avatar + "' /></div><div class='span8'><span class='comment-user'>" + i.user + "</span><br /><br /><span class='comment-text'>" + i.text + "</span></div></div>");						
+					});
+				}
+				else {
+					$("div#comment-list").html("<h6>No Comments have been made yet, be the first!</h6>");
+				}
       }
 
     },
@@ -89,6 +100,8 @@ function submitComment() {
 	      console.log('submit_comment():success');
 	      console.log(result);
 
+				$("#comment_text").val('');
+				
 	      if (result.success == false) {
 
 	      }

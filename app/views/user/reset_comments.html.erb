@@ -1,0 +1,23 @@
+<h1>Resetting Comments</h1>
+
+<h3>Page Comment Counts</h3>
+<%
+	if @page_list
+		@page_list.each do |p|
+%>
+			<pre><%= p.inspect %></pre><br />
+<%	
+		end
+	end
+%>
+
+<h3>Page Comments</h3>
+<%
+	if @comment_list
+		@comment_list.each do |c|
+%>
+			<pre><%= c.inspect %></pre><br />
+<%	
+		end
+	end
+%>

@@ -1,0 +1,209 @@
+//= require jquery
+//= require jquery_ujs
+//= require google-code-prettify/prettify
+//= require bootstrap
+//= require date
+
+
+var num_comments = 0  
+var comments = null;
+
+var res_width = 0;
+var res_height = 0;
+
+$(document).ready(function(){
+
+  // Convert all <pre> tags into nice code blocks
+  prettyPrint();
+	detectWindowSize();
+  
+  $("#submit-comment").click(function(e){
+    e.preventDefault();
+    submitComment(); 
+  });
+
+	if (parseInt(res_width) <= 1024) {  
+		$('#comment-input-width').removeClass('span8').addClass('span10');
+	}
+
+  !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+  
+});
+
+
+
+<%
+# this is used for the layouts of individual comments, substituted into the javascript
+comment_layout = <<STRING
+
+  <div class='comment' class='row-fluid' >
+      <div class='comment-content-container span8 " + (i.approved ? '':'waiting-for-approval') + "'>
+          <div class='comment-img span1' style='text-align: center'><img src='" + i.avatar + "' /></div>
+          <div class='span8'>
+            <div class='comment-user'>" + i.user + "</div>
+            <div class='comment-text'>" + i.comment_text + "</div>
+						<div class='comment-time'>" + i.time + (i.approved ? '':'&nbsp;(awaiting approval)') + "</div>
+          </div>
+      </div
+  </div>
+
+STRING
+
+comment_layout.gsub!("\n", "").gsub!("\t", "")
+%>
+
+
+<%
+# this is used for the layouts of individual comments, substituted into the javascript
+comment_layout_narrow = <<STRING
+
+  <div class='comment' class='row-fluid' >
+      <div class='comment-content-container span10 " + (i.approved ? '':'waiting-for-approval') + "'>
+          <div class='comment-img span2' style='text-align: center'><img src='" + i.avatar + "' /></div>
+          <div class='span10'>
+            <div class='comment-user'>" + i.user + "</div>
+            <div class='comment-text'>" + i.comment_text + "</div>
+						<div class='comment-time'>" + i.time + (i.approved ? '':'&nbsp;(awaiting approval)') + "</div>
+          </div>
+      </div
+  </div>
+
+STRING
+
+comment_layout_narrow.gsub!("\n", "").gsub!("\t", "")
+%>
+
+
+function pullComments() {
+  $.ajax({
+    type: 'GET',
+    url: '/api/pull_comments',
+    data: { page: page },
+    dataType: "json",
+    headers: {
+      'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+    },
+    beforeSend: function(){
+
+    },
+    success: function(result) {
+      //console.log('pull_comments():success - ' + page);
+      console.log(result);
+
+      if (result.success == false) {
+
+      }
+      else {
+        num_comments = parseInt(result.num_comments);
+        $("div#comment-list").html("");
+        
+        if (num_comments > 0) {
+          comments = result.comment_list;       
+          comments.forEach(function(i){
+            console.log(i);
+						var dt = new Date(0);
+						dt.setUTCSeconds(parseInt(i.timestamp))
+						console.log(i.timestamp)
+						console.log(dt.toString("ddd, MMM dd yyyy, h:mm") + dt.toString(" tt").toLowerCase())
+						i.time = dt.toString("ddd, MMM dd yyyy, h:mm") + dt.toString(" tt").toLowerCase();
+						
+						
+						if (parseInt(res_width) <= 1024) {
+            	$("div#comment-list").append("<%=comment_layout_narrow%>");            
+						}
+						else {
+							$("div#comment-list").append("<%=comment_layout%>");
+						}
+						
+          });
+        }
+        else {
+          $("div#comment-list").html("<h4>No Comments have been made yet, be the first!</h4>");
+        }
+      }
+
+    },
+    error: function() {
+      console.log('pull_comments():error - ' + page);
+    },
+    complete: function() {
+      //console.log('pull_comments():complete');
+    } // complete:
+  });
+}
+function validateComment() {
+  comment_text = $("#comment_text").val();
+  if (comment_text.length > 0) {
+    return true;
+  }
+  return false;
+}
+function submitComment() {
+  
+  comment_text = $("#comment_text").val();
+  
+  if (validateComment) {
+    $.ajax({
+      type: 'POST',
+      url: '/api/submit_comment',
+      data: { page: page, comment_text: comment_text },
+      dataType: "json",
+      headers: {
+        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+      },
+      beforeSend: function(){
+        $("#submit-comment").unbind('click').addClass("disabled");
+        $("#commenting-results").hide();
+        $("#commenting-results").html("")
+      },
+      success: function(result) {
+        //console.log('submit_comment():success');
+        console.log(result);
+
+        $("#comment_text").val('');
+        
+        if (result.success == false) {
+          console.log(result.reason + " (" + result.error_code + ")");
+          $("#commenting-results").append("<div class='alert alert-error'><strong>Hold up!</strong> " + result.help_text + " (" + result.reason + ")" + "</div>");
+          $("#commenting-results").show();          
+        }
+        else {          
+          $("#commenting-results").append("<div class='alert alert-success'><strong>Thank You!</strong> Your message has been posted.</div>");
+          $("#commenting-results").show();
+          pullComments();
+        }
+
+      },
+      error: function() {
+        console.log('submit_comment():error');
+      },
+      complete: function() {
+        $("#submit-comment").click(function(e){
+          e.preventDefault();
+          submitComment(); 
+        }).removeClass("disabled");
+        //console.log('submit_comment():complete');
+      } // complete:
+    });
+  }
+}
+
+
+
+
+function detectWindowSize() {
+	res_width = pageWidth();
+	res_height = pageHeight();
+	$("#res-width").html(res_width);
+	$("#res-height").html(res_height);
+}
+
+function pageWidth() {return window.innerWidth != null? window.innerWidth : document.documentElement && document.documentElement.clientWidth ?       document.documentElement.clientWidth : document.body != null ? document.body.clientWidth : null;} 
+
+function pageHeight() {return  window.innerHeight != null? window.innerHeight : document.documentElement && document.documentElement.clientHeight ?  document.documentElement.clientHeight : document.body != null? document.body.clientHeight : null;} 
+
+function posLeft() {return typeof window.pageXOffset != 'undefined' ? window.pageXOffset :document.documentElement && document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ? document.body.scrollLeft : 0;} 
+
+function posTop() {return typeof window.pageYOffset != 'undefined' ?  window.pageYOffset : document.documentElement && document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ? document.body.scrollTop : 0;} 
+
+function posRight() {return posLeft()+pageWidth();} function posBottom() {return posTop()+pageHeight();}

@@ -1,0 +1,25 @@
+<% content_for :title, "Smart CAS Pattern (Auto-Retry CAS) in Couchbase" %>
+<% content_for :keywords, "cas, compare and swap, check and set, smart, key, value, key-value, pattern, design, couchbase" %>
+<% content_for :description, "Key-Value Pattern in Couchbase to replace parts of Documents automatically if that part has not been modified by another CAS operation" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Patterns</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Smart CAS</li>
+</ul>
+
+<div class="page-header">
+  <h1>Smart CAS Pattern
+		<small>Conditionally Retry Compare-And-Swap (CAS) operations</small>
+	</h1>
+	<br />
+	<p class="lead w80">This pattern is a way to detect collisions at the JSON key level, and retry CAS operations if the JSON key-value being modified has not changed.</p>
+</div>
+
+<h2>Being Written Up</h2>
+
+<%= render :partial => "/layouts/comments" %>
+

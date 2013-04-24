@@ -7,18 +7,18 @@
     	pullComments();
     });
   </script>
-  <div>
+  <div class='row-fluid'><div id="comment-input-width" class='span8'>
 <% else %>
   <div style="display:none;">
 <% end %>    
 
     <h1 class="comment-title">Q&A and Comments</h1>
     <form class="well">
-    <textarea id="comment_text" name="comment_text" class="span8" placeholder="Please make your comment, or ask a question..."></textarea>
-    <button id="submit-comment" class="btn btn-primary" type="submit">Send</button>
+				<div id="commenting-results" style="display:none"></div>
+    		<textarea id="comment_text" name="comment_text" class="span12" placeholder="Please make your comment, or ask a question..."></textarea><br />
+    		<button id="submit-comment" class="btn btn-primary" type="submit">Send</button>
     </form>
 
     <br />
-    <h6>No Comments have been made yet, be the first!</h6>
-  </div>
-
+  </div></div>
+  <div id="comment-list" class="row-fluid"></div>    

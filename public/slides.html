@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<base target="_blank">
+<base>
+
+<style>
+@import url(slides.css);
+@import url(http://bost.ocks.org/mike/d3/workshop/chart.css);
+</style>
+
+<body class="overview">
+<script src="http://d3js.org/d3.v2.min.js"></script>
+<script src="http://bost.ocks.org/mike/d3/workshop/chart.js"></script>
+
+<section>
+<h1 class="blue">Couchbase</h1>
+<h2><a href="http://bost.ocks.org/mike/">Jasdeep Jaitla</a><div class="grey">@scalabl3</div></h2>
+<aside>This is a full introduction to why NoSQL exists, what is Couchbase, and how get started using it!<p>Scroll down or use the arrow keys to continue.</aside>
+</section>
+
+<section>
+<h2>Outline</h2>
+<ul>
+<li>Preface
+<li>History
+<li>Why Couchbase is Fast
+<li>Scales <span class="grey">&</span> Axes
+<li>Shapes
+<li>Layouts
+</ul>
+
+</section>
+
+<section class="chapter">
+<h3>Relational (SQL) Databases grew out of the Mainframe era 35 years ago around the mid-1970's.</h3>
+<h3>It became standardized in the late 1980s and early 1990s and became the defacto standard for data storage for applications. </h3>
+<h2>Preface</h2>
+</section>
+
+<section>
+<h1 class="double">Visualizing <span class="purple">Data</span> with <span class="green">Web Standards</span></h1>
+<h2>D3 provides transformation; no new representation.</h2>
+<aside>A central tenet of D3 is to make visualization easier without introducing a new way of representing an image. D3 uses existing standards—namely HTML and SVG.<p>This approach offers a whole host of benefits, including greater expressiveness, future-proofing, and compatibility with existing tools and technologies, such as CSS and debuggers.</aside>
+</section>
+
+<section>
+<h1><span class="purple">Data</span> ↦ <span class="green">Elements</span></h1>
+<h2>Visualization requires visual encoding: mapping data to elements.</h2>
+<aside>Since D3 does not provide new representa&shy;tion, the task of visualization is constructing a DOM from data. We must also update the DOM whenever the data changes, either due to dynamic (<i>e.g.</i>, realtime) data or interaction.<p>In a visualization, each entity (or data point) has a corresponding element (or graphical mark). D3 helps you maintain this mapping from data to elements.</aside>
+</section>
+
+<section>
+<h1><span class="purple">Data</span>-Driven <span class="green">Documents</span></h1>
+<h2>The name “D3” refers to the <a href="http://www.w3.org/TR/dom/">W3C <span class="green">Document</span> Object Model</a>.</h2>
+</section>
+
+<section>
+<h1 class="green">Web Standards</h1>
+<h2>There are myriad free resources for learning standards.</h2>
+<aside>“Learning D3” is largely learning web standards. Fortunately, there are lots of resources for learning standards!</aside>
+</section>
+
+<section>
+<h1><span class="green">HTML</span> Resources</h1>
+<h2><a href="http://www.w3.org/TR/html5/">HTML5 Spec</a>, <a href="http://developers.whatwg.org/">HTML5 for Developers</a>, <a href="https://developer.mozilla.org/en/HTML">MDN</a>, <a href="http://diveintohtml5.info/">Dive Into HTML5</a></h2>
+<aside>Specs are good for reference, but a bit overwhelming if you’re not sure where to start. Specs can be more helpful for understanding interesting techniques found in the wild.</aside>
+</section>
+
+<section>
+<pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;body&gt;
+Hello, world!</code></pre>
+<h2><a href="hello-world.html">hello-world.html</a></h2>
+<aside>Hat tip to Paul Irish for showing the beauty of minimalist HTML5 markup. All those extraneous tags? Poof!</aside>
+</section>
+
+<section>
+<h1><span class="green">SVG</span> Resources</h1>
+<h2><a href="http://www.w3.org/TR/SVG/">SVG Spec</a>, <a href="https://developer.mozilla.org/en/SVG">MDN</a>, <a href="https://github.com/mbostock/d3/wiki/SVG-Shapes">D3 API Reference</a></h2>
+<aside>SVG lets you draw vector graphics in the browser, allowing much greater expressiveness than HTML. You can do some stuff (like simple bar charts and input controls) using only HTML, but mostly you’ll want to use SVG to visualize data.</aside>
+</section>
+
+<section>
+<pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;svg width="960" height="500"&gt;
+  &lt;text y="12"&gt;
+    Hello, world!
+  &lt;/text&gt;
+&lt;/svg&gt;</code></pre>
+<h2><a href="hello-svg.html">hello-svg.html</a></h2>
+<aside>You can embed SVG directly inside HTML, much like an image tag. Of course, if you’re using D3 for data visualization, the SVG will more often be constructed by JavaScript. Sometimes you might have static bits of SVG; you can always modify it later.</aside>
+</section>
+
+<section>
+<h1><span class="green">CSS</span> Resources</h1>
+<h2><a href="http://www.w3.org/TR/CSS2/">CSS Spec</a>, <a href="http://www.w3.org/TR/selectors/">Selectors Spec</a></h2>
+<aside>Unlike HTML and SVG, CSS doesn’t introduce new representation; it’s just a way of adding aesthetics and presentation (such as colors and fonts). CSS greatly simplifies your code, so I highly recommend it!<p>For example, rather than assigning colors explicitly via JavaScript, assign a class. Then you can easily change the definition or apply multiple styles simultaneously.</aside>
+</section>
+
+<section>
+<pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;style&gt;
+body { background: steelblue; }
+&lt;/style&gt;
+&lt;body&gt;
+Hello, world!</code></pre>
+<h2><a href="hello-css.html">hello-css.html</a></h2>
+</section>
+
+<section>
+<h1><span class="green">JavaScript</span> Resources</h1>
+<h2><a href="https://developer.mozilla.org/en/JavaScript">MDN</a>, <a href="http://javascript.crockford.com/">Douglas Crockford</a>’s <a href="http://shop.oreilly.com/product/9780596517748.do">JavaScript: The Good Parts</a></h2>
+<aside>If beauty is in the eye of the beholder, JavaScript is a beautiful language. D3 uses some functional idioms (lots of closures and higher-order programming). These concepts can be unfamiliar but are very elegant and powerful. If you’re unsure how some piece of D3 code works, reading about these language features may help.</aside>
+</section>
+
+<section>
+<pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;body&gt;
+&lt;script&gt;
+console.log("Hello, world!");
+&lt;/script&gt;</code></pre>
+<h2><a href="hello-javascript.html">hello-javascript.html</a></h2>
+</section>
+
+<section>
+<h1 class="pink">Start small!</h1>
+<h2>You don’t need to master everything at once.</h2>
+</section>
+
+<section>
+<h1>Getting Started</h1>
+<h2><a href="http://d3js.org/">http://d3js.org/</a></h2>
+</section>
+
+<section>
+<pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;style&gt;/* CSS */&lt;/style&gt;
+&lt;body&gt;
+&lt;script src="d3.v2.js"&gt;&lt;/script&gt;
+&lt;script&gt;/* JavaScript */&lt;/script&gt;</code></pre>
+<h2><a href="hello-d3.html">hello-d3.html</a></h2>
+<aside>Use this template to get started with D3. I recommend hosting a copy of d3.v2.js yourself (either download the file, download the entire repository from GitHub, or clone the git repo). Alternatively, you can link to the latest version on <a href="http://d3js.org/d3.v2.js">mbostock.github.com</a>.</aside>
+</section>
+
+<section>
+<pre><code><span class="grey">&gt;</span> python -m SimpleHTTPServer 8888 &</code></pre>
+<h2>A web server is required when loading external data (<i>e.g.</i>, d3.csv).</h2>
+<aside>D3’s bundled examples won’t work locally unless you start a web server and access them from http://localhost, rather than file://.</aside>
+</section>
+
+<section style="background-image:url(element-inspector.png);">
+<h1 class="grey shadow">Developer Tools<div class="black">⌥⌘I</div></h1>
+<aside>Inspect elements, inspect computed styles, change styles and attributes on the fly!<p>Best. Tool. Ever.</aside>
+</section>
+
+<section style="background-image:url(javascript-console.png);">
+<h1 class="grey shadow">JavaScript Console<div class="black">⌥⌘J</div></h2>
+<aside>Gone are the days of debugging by alert(); use the console to explore D3 interactively. If you want to understand how something works, break it down into individual steps and look at the return values (the selection) and the DOM along the way.<p>Also, use breakpoints and the debugger! Step into the code and observe local variables. It’s super effective.</aside>
+</section>
+
+<section>
+<h1><span class="blue">D3</span> Resources</h1>
+<h2><a href="https://github.com/mbostock/d3/wiki/API-Reference">D3 API Reference</a>, <a href="https://github.com/mbostock/d3/wiki">D3 Wiki</a>, <a href="https://groups.google.com/group/d3-js">D3 Group</a>, <a href="http://stackoverflow.com/questions/tagged/d3.js">D3 Stack Overflow</a></h2>
+<aside>Although not as established as standards, there are still many available resources for learning D3, including a variety of contributed tutorials and talks.<p>Make use of the d3-js group! I answer support questions nearly everyday and love to hear from you. Unless you are angry. In which case you should enjoy some time outside.</aside>
+</section>
+
+<section class="chapter">
+<h1>Selections</h1>
+<aside>Selections of elements are D3’s atomic operand; the basic idea is familiar to you already if you know jQuery.</aside>
+</section>
+
+<section>
+<h1>Selectors</h1>
+<h2>CSS provides a handy way to refer to specific elements.</h2>
+</section>
+
+<section>
+<pre><code class="css">pre, code {
+  font-family: "Menlo", monospace;
+  font-size: 48px;
+}</code></pre>
+<h2>CSS assigns style rules via selectors.</h2>
+<aside>This snippet applies two style properties (setting the font family and size) to all &lt;pre&gt; and &lt;code&gt; elements. CSS is a declarative language for assigning styles to elements.</aside>
+</section>
+
+<section>
+<pre class="blue"><code>#foo        // &lt;any id="foo"&gt;
+foo         // &lt;foo&gt;
+.foo        // &lt;any class="foo"&gt;
+[foo=bar]   // &lt;any foo="bar"&gt;
+foo bar     // &lt;foo&gt;&lt;bar&gt;&lt;/foo&gt;</code></pre>
+<h2>Simple selectors identify elements by one facet.</h2>
+<aside>There are quite a few more selectors not covered here, but these are the ones you’ll need most often.</aside>
+</section>
+
+<section>
+<pre class="blue"><code>foo.bar     // &lt;foo class="bar"&gt;
+foo#bar     // &lt;foo id="bar"&gt;</code></pre>
+<h2>Compound selectors identify elements by two or more facets.</h2>
+</section>
+
+<section>
+<pre><code class="css">document.querySelectorAll("pre, code")</code></pre>
+<h2>The W3C standardized selector support for JavaScript.</h2>
+<aside>The W3C Selectors API provides select<i>ors</i>, but not select<i>ions</i>. So, you can select elements easily, yet you must iterate over them and assign attributes and styles for each. Hence the need for JavaScript libraries to make web development easier.</aside>
+</section>
+
+<section>
+<pre><code class="css">d3.selectAll("pre, code")</code></pre>
+<h2>D3 provides shorthand for selecting and manipulating.</h2>
+<aside>Or, in jQuery: $("pre, code").</aside>
+</section>
+
+<section>
+<h1>Selections are Arrays</h1>
+<h2>Use developer tools to select, inspect, modify and experiment.</h2>
+</section>
+
+<section>
+<pre><code>// select all &lt;circle&gt; elements
+var circle = d3.selectAll("circle");
+
+// set some attributes and styles
+circle.attr("cx", 20);
+circle.attr("cy", 12);
+circle.attr("r", 24);
+circle.style("fill", "red");</code></pre>
+<h2>The attr and style methods set attributes and styles, respectively.</h2>
+<aside>One thing to note: numbers and other values are automatically coerced to strings when setting attributes and styles. So, you don’t have to do that yourself (which is nice), and you can also use helper classes such as d3.rgb and d3.hsl.</aside>
+</section>
+
+<!-- <section>
+<pre><code>// &lt;circle cx="20"&gt;
+circle.attr("cx", 20);</code></pre>
+<h2>selection.attr - positions and sizes</h2>
+</section> -->
+
+<!-- <section>
+<pre><code>// &lt;circle style="fill: red;"&gt;
+circle.style("fill", "red");</code></pre>
+<h2>selection.style - aesthetics (fonts and colors)</h2>
+</section> -->
+
+<!-- <section>
+<pre><code>// &lt;span&gt;Hello, world!&lt;/span&gt;
+span.text("Hello, world!");</code></pre>
+<h2>selection.text - displayed text</h2>
+</section> -->
+
+<section>
+<pre><code>// select all &lt;circle&gt; elements
+// and set some attributes and styles
+d3.selectAll("circle")
+    .attr("cx", 20)
+    .attr("cy", 12)
+    .attr("r", 24)
+    .style("fill", "red");</code></pre>
+<h2>Method chaining allows shorter (and more readable) code.</h2>
+</section>
+
+<!-- <section>
+<h1>selection.selectAll</h1>
+<h2>You can select descendants for each currently-selected element.</h2>
+</section> -->
+
+<!-- <section>
+<pre><code>// select all &lt;section&gt; elements
+var section = d3.selectAll("section");
+
+// select all &lt;span&gt; elements within
+var span = section.selectAll("span");
+
+// or, as a flat selection
+var span = d3.selectAll("section span");</code></pre>
+</section> -->
+
+<section>
+<h1>selection.append</h1>
+<h2>Create new elements, append, and select.</h2>
+</section>
+
+<section>
+<pre><code>// select the &lt;body&gt; element
+var body = d3.select("body");
+
+// add an &lt;h1&gt; element
+var h1 = body.append("h1");
+h1.text("Hello!");</code></pre>
+<h2>With one element selected, adds one element.</h2>
+</section>
+
+<section>
+<pre><code>// select all &lt;section&gt; elements
+var section = d3.selectAll("section");
+
+// add an &lt;h1&gt; element to each
+var h1 = section.append("h1");
+h1.text("Hello!");</code></pre>
+<h2>With many elements selected, adds one element to each.</h2>
+</section>
+
+<section>
+<pre><code>var h1 = d3.selectAll("section")
+    .style("background", "steelblue")
+  .append("h1")
+    .text("Hello!");</code></pre>
+<h2><span class="pink">Use caution</span> with method chaining: append returns a new selection!</h2>
+<aside>With method chaining, I normally use four spaces to indent. However, I use two spaces for operations that change the selection, such as append. This causes operations that change the context to stick out.<p>In this snippet, the entire expression evaluates to the appended &lt;h1&gt; elements, even though we started by selecting &lt;section&gt; elements.</aside>
+</section>
+
+<section>
+<h1>Add many elements?</h1>
+<h2>No single operation; this brings us to our next topic…</h2>
+</section>
+
+<!-- <section>
+<h1>selection.filter</h1>
+<h2>Select a subset of selected elements.</h2>
+</section> -->
+
+<!-- <section>
+<pre><code>// give all sections a blue background,
+// and odd sections yellow text
+d3.selectAll("section")
+    .style("background", "steelblue")
+  .filter(":nth-child(odd)")
+    .style("color", "yellow");</code></pre>
+</section> -->
+
+<!-- <section>
+<h1>select ≠ selectAll</h1>
+<h2>Select only the first, or select them all.</h2>
+</section> -->
+
+<section class="chapter">
+<h1>Data</h1>
+</section>
+
+<section>
+<h1>Data are Arrays</h1>
+<h2>You can represent data however you like (in JavaScript).</h2>
+<aside>Selections are arrays, and data are arrays. Coincidence? Nope.</aside>
+</section>
+
+<section>
+<pre><code>// A bar chart, perhaps?
+var data = [1, 1, 2, 3, 5, 8];</code></pre>
+<h2>Data can be numbers.</h2>
+<aside>If you want to be fancy, you can call an array of numbers a <q class="nogap">univariate dataset</q>.</aside>
+</section>
+
+<section id="bar-chart">
+<script>
+d3.select("#bar-chart").datum([1, 1, 2, 3, 5, 8]).call(barChart());
+</script>
+<h2><a href="bar-chart.html">bar-chart.html</a></h2>
+</section>
+
+<section>
+<pre><code>// A scatterplot, perhaps?
+var data = [
+  {x: 10.0, y: 9.14},
+  {x:  8.0, y: 8.14},
+  {x: 13.0, y: 8.74},
+  {x:  9.0, y: 8.77},
+  {x: 11.0, y: 9.26}
+];</code></pre>
+<h2>Data can be objects.</h2>
+<aside>If you want to be fancy, you can call an array of objects a <q class="nogap">multivariate dataset</q>.</aside>
+</section>
+
+<section id="dot-chart">
+<script>
+d3.select("#dot-chart").datum([
+  {x: 10.0, y: 9.14},
+  {x:  8.0, y: 8.14},
+  {x: 13.0, y: 8.74},
+  {x:  9.0, y: 8.77},
+  {x: 11.0, y: 9.26},
+  {x: 14.0, y: 8.10},
+  {x:  6.0, y: 6.13},
+  {x:  4.0, y: 3.10},
+  {x: 12.0, y: 9.13},
+  {x:  7.0, y: 7.26},
+  {x:  5.0, y: 4.74},
+]).call(dotChart());
+</script>
+<h2><a href="dot-chart.html">dot-chart.html</a></h2>
+<aside>Nerd cred if you recognize this!</aside>
+</section>
+
+<section>
+<h1><span class="purple">Data</span> ↦ <span class="green">Elements</span></h1>
+<h2>Use data to create multiple elements.</h2>
+<aside>D3 doesn’t provide a single method for creating multiple elements; instead, it provides a pattern for managing the mapping from data to elements. The way to create elements from scratch is a special case of the more generalized form.</aside>
+</section>
+
+<section>
+<pre><code>svg.selectAll("circle")
+    .data(data)
+  .enter().append("circle")
+    .attr("cx", x)
+    .attr("cy", y)
+    .attr("r", 2.5);</code></pre>
+<h2>We want the selection <span class="purple">“circle”</span> to correspond to data.</h2>
+<aside>This common snippet creates new elements from data. The first line may be surprising—why select &lt;circle&gt; elements if you know they don’t exist? Well, you’re telling D3 that you want them to correspond to data.<p>This parsimonious approach means that when you need to handle update and exit in the future (for your interactive or dynamic visualizations), it’s a simple extension of a pattern you already know.</aside>
+</section>
+
+<section>
+<pre><code>var circle = svg.selectAll("circle")
+    .data(data);</code></pre>
+<h2>The <span class="purple">data</span> method computes the join, defining enter and exit.</h2>
+<aside>The data method does all the work. The enter and exit methods just return the subselections computed in the join.</aside>
+</section>
+
+<section>
+<pre><code>var circle = svg.selectAll("circle")
+    .data(data);
+
+circle.enter().append("circle");</code></pre>
+<h2>Appending to the <span class="purple">enter</span> selection creates the missing elements.</h2>
+<aside>The append method on enter selections is special; it still creates one new element per selected element, but it adds them to the parent node (here the SVG element).</aside>
+</section>
+
+<section>
+<pre><code>var circle = svg.selectAll("circle")
+    .data(data);
+
+circle.enter().append("circle")
+    .attr("cx", x)
+    .attr("cy", y)
+    .attr("r", 2.5);</code></pre>
+<h2>The new elements are bound to data, so we can compute attributes.</h2>
+<aside>X and y here refer to accessor functions, such as function x(d) { return d.x; }. I couldn’t fit them on the slide. I commonly use anonymous functions to compute attributes from data.</aside>
+</section>
+
+<section>
+<h1>Enter<span class="grey">,</span> Update <span class="grey">&</span> Exit</h1>
+<h2><a href="http://bost.ocks.org/mike/join">Thinking with Joins</a></h2>
+<aside>I wrote a <a href="http://bost.ocks.org/mike/join">tutorial on joins</a> recently which is hopefully my best attempt yet at explaining D3’s data join. The data join is likely the hardest concept of D3 to grasp, but it’s a powerful way of manipulating the DOM.</aside>
+</section>
+
+<section id="enter">
+<h1>Enter</h1>
+<script>d3.select("#enter").call(joinChart().mode("enter"))</script>
+<h2>New data, for which there were no existing elements.</h2>
+</section>
+
+<section>
+<pre><code>var circle = svg.selectAll("circle")
+    .data(data)
+  .enter().append("circle")
+    .attr("cx", x)
+    .attr("cy", y)
+    .attr("r", 2.5);</code></pre>
+<h2>When initializing, you might ignore update and exit.</h2>
+<aside>This is the same code snippet as before. In effect, we’ve simplified the general pattern by assuming there are no updating or exiting elements.</aside>
+</section>
+
+<section id="update">
+<h1>Update</h1>
+<script>d3.select("#update").call(joinChart().mode("update"))</script>
+<h2>New data that was joined successfully to an existing element.</h2>
+</section>
+
+<section>
+<pre><code>var circle = svg.selectAll("circle")
+    .data(data)
+    .attr("cx", x)
+    .attr("cy", y)
+    .attr("r", 2.5);</code></pre>
+<h2>When updating, you might ignore enter and exit.</h2>
+</section>
+
+<section id="exit">
+<h1>Exit</h1>
+<script>d3.select("#exit").call(joinChart().mode("exit"))</script>
+<h2>Existing elements, for which there were no new data.</h2>
+<aside>I didn't include a code snippet here, but typically you just call selection.remove on exit. You can also create an exit transition, so that elements animate before removal.</aside>
+</section>
+
+<section id="enter-update">
+<h1 class="double">Enter <span class="grey">+</span><br>Update</h1>
+<script>d3.select("#enter-update").call(joinChart().mode("enter update"))</script>
+<h2>Entering nodes are added to update on append.</h2>
+<aside>OK, one more special feature of the append method on enter selections. This makes it easier for you to operate on entering and updating elements simultaneously, without needing to reselect after computing the data join. This reduces code duplication.</aside>
+</section>
+
+<section>
+<h1>Key Function</h1>
+<h2>You can control the join; by default, the join is by index.</h2>
+<aside>You can ignore key functions if you are creating static visualizations; you usually need a key function only if you are doing transitions and want to maintain object constancy.</aside>
+</section>
+
+<section>
+<pre><code>// A scatterplot, perhaps?
+var data = [
+  {name: "Alice", x: 10.0, y: 9.14},
+  {name:   "Bob", x:  8.0, y: 8.14},
+  {name: "Carol", x: 13.0, y: 8.74},
+  {name:  "Dave", x:  9.0, y: 8.77},
+  {name: "Edith", x: 11.0, y: 9.26}
+];</code></pre>
+<h2>If needed, data should have a unique key for joining.</h2>
+</section>
+
+<section>
+<pre><code>function key(d) { return d.name; }
+
+var circle = svg.selectAll("circle")
+    .data(data, key)
+    .attr("cx", x)
+    .attr("cy", y)
+    .attr("r", 2.5);</code></pre>
+<h2>The key function returns a unique string for each datum.</h2>
+</section>
+
+<section>
+<h1>Loading Data</h1>
+<h2>D3 provides several convenience routines using <a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>.</h2>
+<aside>Loading data isn’t core feature of D3 <i>per se</i>, but since it’s commonly needed, there are a few built-in convenience methods.</aside>
+</section>
+
+<section>
+<h1>CSV</h1>
+<h2>Comma-Separated Values: <a href="https://github.com/mbostock/d3/wiki/CSV">d3.csv</a></h2>
+</section>
+
+<section>
+<pre><code class="csv">symbol,date,price
+S&P 500,Jan 2000,1394.46
+S&P 500,Feb 2000,1366.42
+S&P 500,Mar 2000,1498.58
+S&P 500,Apr 2000,1452.43
+S&P 500,May 2000,1420.6
+S&P 500,Jun 2000,1454.6
+S&P 500,Jul 2000,1430.83</code></pre>
+<h2><a href="stocks.csv">stocks.csv</a></h2>
+</section>
+
+<section>
+<pre><code>var format = d3.time.format("%b %Y");
+
+d3.csv("stocks.csv", function(stocks) {
+  stocks.forEach(function(d) {
+    d.price = +d.price;
+    d.date = format.parse(d.date);
+  });
+});</code></pre>
+<h2>CSV is untyped, so coercion from strings is required.</h2>
+<aside>The array.forEach method is a built-in JavaScript method to iterate over all elements in an array (here rows in the loaded CSV file).</aside>
+</section>
+
+<section id="stocks-csv-chart">
+<script>(function() {
+
+var format = d3.time.format("%b %Y");
+
+d3.csv("stocks.csv", function(stocks) {
+  stocks.forEach(function(d) {
+    d.price = +d.price;
+    d.date = format.parse(d.date);
+  });
+
+  stocks = stocks.filter(function(d) {
+    return d.symbol == "S&P 500";
+  });
+
+  d3.select("#stocks-csv-chart").insert("div", "h2")
+      .datum(stocks)
+    .call(timeChart()
+      .x(function(d) { return d.date; })
+      .y(function(d) { return d.price; }));
+});
+
+})()</script>
+<h2><a href="area-chart.html">area-chart.html</a></h2>
+</section>
+
+<section>
+<h1>JSON</h1>
+<h2>JavaScript Object Notation: <a href="https://github.com/mbostock/d3/wiki/Requests#wiki-d3_json">d3.json</a></h2>
+<aside>Use JSON rather than JSONP, if you can; JSONP is insecure (and as often practiced, synchronous). For loading cross-domain data, use the Access-Control-Allow-Origin: * header instead.</aside>
+</section>
+
+<section>
+<pre style="font-size:30px;"><code>[{"symbol": "S&P 500", "date": "Jan 2000", "price": 1394.46},
+ {"symbol": "S&P 500", "date": "Feb 2000", "price": 1366.42},
+ {"symbol": "S&P 500", "date": "Mar 2000", "price": 1498.58},
+ {"symbol": "S&P 500", "date": "Apr 2000", "price": 1452.43},
+ {"symbol": "S&P 500", "date": "May 2000", "price": 1420.6},
+ {"symbol": "S&P 500", "date": "Jun 2000", "price": 1454.6},
+ {"symbol": "S&P 500", "date": "Jul 2000", "price": 1430.83},
+ {"symbol": "S&P 500", "date": "Aug 2000", "price": 1517.68},
+ {"symbol": "S&P 500", "date": "Sep 2000", "price": 1436.51},
+ {"symbol": "S&P 500", "date": "Oct 2000", "price": 1429.4},
+ {"symbol": "S&P 500", "date": "Nov 2000", "price": 1314.95},
+ {"symbol": "S&P 500", "date": "Dec 2000", "price": 1320.28},
+ {"symbol": "S&P 500", "date": "Jan 2001", "price": 1366.01}…</code></pre>
+<h2><a href="stocks.json">stocks.json</a></h2>
+</section>
+
+<section>
+<pre><code>var format = d3.time.format("%b %Y");
+
+d3.json("stocks.json", function(stocks) {
+  stocks.forEach(function(d) {
+    d.date = format.parse(d.date);
+  });
+});</code></pre>
+<h2>JSON is typed, but you must still parse dates.</h2>
+<aside>Another option is to represent dates as UNIX epoch milliseconds or ISO 8601 strings, in which case you can use the Date constructor rather than a time format.</aside>
+</section>
+
+<!-- <section id="stocks-json-chart">
+<script>(function() {
+
+var format = d3.time.format("%b %Y");
+
+d3.json("stocks.json", function(stocks) {
+
+  stocks.forEach(function(d) {
+    d.date = format.parse(d.date);
+  });
+
+  stocks = stocks.filter(function(d) {
+    return d.symbol == "S&P 500";
+  });
+
+  d3.select("#stocks-json-chart")
+      .datum(stocks)
+    .call(timeChart()
+      .x(function(d) { return d.date; })
+      .y(function(d) { return d.price; }));
+});
+
+})()</script>
+</section> -->
+
+<section>
+<h1>Data is Asynchronous</h1>
+<h2>Code that depends on data must be invoked via callback.</h2>
+<aside>D3 doesn’t provide any synchronous methods for loading data; loading data asynchronously should give a better experience for your users, since the browser won’t stall while data is loading.</aside>
+</section>
+
+<section>
+<h1>Data is Messy</h1>
+<h2>Data is rarely in the exact format needed for visualization.</h2>
+<aside>This doesn’t scratch the surface of the data cleaning problem. For that, see projects such as Google Refine and Stanford’s Data Wrangler.</aside>
+</section>
+
+<section>
+<h1 class="grey double"><span class="white">array.</span><br>{<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/filter" class="white">filter</a>,<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/map" class="white">map</a>,<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort" class="white">sort</a>,…}</h1>
+<h2>JavaScript has a number of useful built-in array methods.</h2>
+<aside>Deferring data transformations to the client often makes it easier for you to prototype visualizations rapidly; you can change the data on-the-fly rather than needing to re-run your data pipeline.<p>On the other hand, when you want to share your visualization with the world, it’s a good idea to optimize your dataset for performance.</aside>
+</section>
+
+<section>
+<h1 class="grey double"><span class="white">d3.</span><br>{<a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_nest" class="white">nest</a>,<a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_keys" class="white">keys</a>,<a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_values" class="white">values</a>,…}</h1>
+<h2>D3 also has a variety of data-transform methods; explore the <a href="https://github.com/mbostock/d3/wiki/API-Reference">API</a>.</h2>
+</section>
+
+<section class="chapter">
+<h1>Scales <span class="grey">&</span> Axes</h1>
+</section>
+
+<section>
+<h1>Scales</h1>
+</section>
+
+<section>
+<h1><span class="purple">Data</span> ↦ <span class="green">Attributes</span></h1>
+<h2>Attributes (and styles) control position and appearance.</h2>
+<aside>We use the data join to maintain the mapping from data to elements, but what about the mapping from data to attributes? We need to compute attributes from data to generate visual encodings (position, color, <i>etc.</i>). Scales help with this.</aside>
+</section>
+
+<section>
+<h1><span class="purple">Domain</span> ↦ <span class="green">Range</span></h1>
+<h2>Scales are functions that map from data-space to visual-space.</h2>
+<aside>Some scales can also go the other way and compute an inverse mapping from range to domain (the scale.invert method); this is useful for interaction.</aside>
+</section>
+
+<section>
+<pre><code>function x(d) {
+  return d * 42 + "px";
+}</code></pre>
+<h2>Scales are convenient but optional; you can roll your own.</h2>
+<aside>The function x, here, is a linear scale. But it’s a pain to implement scales this way because you end up hard-coding the scale factor (e.g., 42).</aside>
+</section>
+
+<section>
+<h1>Quantitative Scales</h1>
+<h2>Map a continuous (numeric) domain to a continuous range.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([12, 24])
+    .range([0, 720]);
+
+x(16); // 240</code></pre>
+<h2>A linear scale simply translates and scales.</h2>
+<aside>The domain of a scale is the expected data values (here from 12 to 24), while the range is the desired output values (0 is the left side of the chart, and 720 is the right side of the chart). Thus, this scale implements a position encoding.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.sqrt()
+    .domain([12, 24])
+    .range([0, 720]);
+
+x(16); // 268.9056992603583</code></pre>
+<h2>A sqrt (or pow) scale applies an exponential transform.</h2>
+<aside>Sometimes you want to transform the data as part of the encoding. For example, you might use a square-root scale when computing the radius of a circle, so that the area is proportional to the associated data value.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.log()
+    .domain([12, 24])
+    .range([0, 720]);
+
+x(16); // 298.82699948076737</code></pre>
+<h2>A log scale applies a logarithmic transform.</h2>
+<aside>Be careful that your log scale’s domain never crosses zero (which is at infinity)!</aside>
+</section>
+
+<section>
+<h1>Domains <span class="grey">&</span> Ranges</h1>
+<h2>Typically, domains are derived from data while ranges are constant.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([0, d3.max(numbers)])
+    .range([0, 720]);</code></pre>
+<h2>Use <a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_min">d3.min</a> and <a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_max">d3.max</a> to compute the domain.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.log()
+    .domain(d3.extent(numbers))
+    .range([0, 720]);</code></pre>
+<h2>Use <a href="https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_extent">d3.extent</a> to compute the min and max simultaneously.</h2>
+</section>
+
+<section>
+<pre><code>function value(d) { return d.value; }
+
+var x = d3.scale.log()
+    .domain(d3.extent(objects, value))
+    .range([0, 720]);</code></pre>
+<h2>Use an accessor function to derive a numeric value for objects.</h2>
+<aside>If you prefer, you can use array.map instead of an accessor function.</aside>
+</section>
+
+<section>
+<h1>Interpolators</h1>
+<h2>Quantitative scales support multiple interpolators.</h2>
+<aside>D3 has a powerful set of interpolators that are used by scales and transitions. It’s good to understand how interpolators work. Occasionally you might also find a reason to use an interpolator directly, or to write your own custom interpolator.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([12, 24])
+    .range(["steelblue", "brown"]);
+
+x(16); // #666586</code></pre>
+<h2>Colors are detected automatically for RGB interpolation.</h2>
+<aside>D3 understands CSS2 colors (such as "#FFF" and "rgb(255,0,0)"). D3 might support perceptual color spaces in the future, namely CIE L*a*b*.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([12, 24])
+    .range(["0px", "720px"]);
+
+x(16); // 240px</code></pre>
+<h2>String interpolation matches embedded numbers; quite flexible.</h2>
+<aside>Generic string interpolation can be used for CSS positions and sizes (which unlike CSS require units, such as "px" or "em"), for SVG path data, and other applications.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([12, 24])
+    .range(["steelblue", "brown"])
+    .interpolate(d3.interpolateHsl);
+
+x(16); // #3cb05f</code></pre>
+<h2>Interpolators can be set explicitly, if desired.</h2>
+<aside>Use HSL interpolation judiciously; rainbow color scales (hue interpolation) are a generally-accepted bad practice.</aside>
+</section>
+
+<section id="interpolate-example">
+<pre><code></code></pre>
+<script>(function(){
+
+var arc = d3.svg.arc()
+    .startAngle(0)
+    .endAngle(function(d) { return d.θ; })
+    .innerRadius(0)
+    .outerRadius(function(d) { return d.r; });
+
+var x = d3.scale.linear()
+    .domain([0, 1280])
+    .range([{θ: Math.PI / 2, r: 80}, {θ: 2 * Math.PI, r: 320}]);
+
+var svg = d3.select("#interpolate-example").append("svg")
+    .attr("width", 1280)
+    .attr("height", 720)
+    .attr("class", "chart")
+    .on("mousemove", mousemove);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", 1280)
+    .attr("height", 720)
+    .style("pointer-events", "all");
+
+var path = svg.append("path")
+    .datum(x(640))
+    .attr("d", arc)
+    .attr("transform", "translate(640,360)")
+    .style("fill", "#3182bd")
+    .style("stroke", "#fff")
+    .style("stroke-width", "2px");
+
+function mousemove() {
+  var d = x(d3.mouse(this)[0]);
+  path.datum(d).attr("d", arc);
+  d3.select("#interpolate-example code").text(JSON.stringify(d));
+}
+
+})()</script>
+<h2>You can even interpolate objects!</h2>
+<aside>Mousemove to see this demo.<p>This slide is contrived, but object interpolation is often used for transitions of complex data objects, such as donut charts or sunburst layouts.</aside>
+</section>
+
+<section>
+<h1>Diverging Scales</h1>
+<h2><a href="http://mbostock.github.com/d3/talk/20111018/calendar.html">Sometimes</a>, you want a compound (“polylinear”) scale.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([-10, 0, 100])
+    .range(["red", "white", "green"]);
+
+x(-5); // #ff8080
+x(50); // #80c080</code></pre>
+<h2>The domain and range can have more than two values!</h2>
+</section>
+
+<section>
+<h1>Ordinal Scales</h1>
+<h2>Map a discrete domain to a discrete range.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.ordinal()
+    .domain(["A", "B", "C", "D"])
+    .range([0, 10, 20, 30]);
+
+x("B"); // 10</code></pre>
+<h2>An ordinal scale is essentially an explicit mapping.</h2>
+<aside>You wouldn’t normally use an ordinal scale this way, but I’m including it as the most direct example of what an ordinal scale does. The first element in the domain is mapped to the first element in the range, and so on.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.category20()
+    .domain(["A", "B", "C", "D"]);
+
+x("B"); // #aec7e8</code></pre>
+<h2>Ordinal scales are often used to assign categorical colors.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.category20()
+    .domain(["A", "B", "C", "D"]);
+
+x("E"); // #2ca02c
+x("E"); // #2ca02c
+x.domain(); // A, B, C, D, E</code></pre>
+<h2>Unknown values are implicitly added to the domain.</h2>
+<aside>You often don’t need to assign a domain explicitly with a categorical color scale; you can just start passing data to the scale and it will do the right thing. However, if you want a deterministic mapping (for example, the same colors across datasets or pages), then you’ll want to define the domain explicitly; otherwise it is order-dependent.</aside>
+</section>
+
+<section id="color-chart">
+<script>d3.select("#color-chart").datum([
+  "category10",
+  "category20",
+  "category20b",
+  "category20c"
+]).call(colorChart());</script>
+<h2>A handful of color scales are built-in; see also <a href="http://colorbrewer2.org">ColorBrewer</a>.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.ordinal()
+    .domain(["A", "B", "C", "D"])
+    .rangePoints([0, 720]);
+
+x("B"); // 240</code></pre>
+<h2>Ordinal ranges can be derived from continuous ranges.</h2>
+<aside>The rangePoints method might be used with an ordinal scatterplot.</aside>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.ordinal()
+    .domain(["A", "B", "C", "D"])
+    .rangeRoundBands([0, 720], .2);
+
+x("B"); // 206, bar position
+x.rangeBand(); // 137, bar width</code></pre>
+<h2>Ordinal ranges are particularly useful for bar charts.</h2>
+<aside>Here the scale returns the position of the left-side of the bar, while the rangeBand method returns the bar width. The second argument to rangeBands (here, .2) is the amount of padding to reserve between bars.<p>The rangeRoundBands method is the same as rangeBands, except it rounds to whole pixels to avoid blurry anti-aliasing.</aside>
+</section>
+
+<section>
+<h1>Axes</h1>
+<h2>D3 provides convenient labeling for scales.</h2>
+<aside>In earlier releases, you had to label the axes yourself! The d3.svg.axis component makes things much easier.</aside>
+</section>
+
+<section>
+<pre><code>var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");</code></pre>
+<h2>Create an axis for a given scale, and configure as desired.</h2>
+<aside>There are a variety of other properties you might want to configure on an axis, such as the number of ticks or the tick format.</aside>
+</section>
+
+<section>
+<pre><code>svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);</code></pre>
+<h2>Render the axis by calling a &lt;g&gt; selection.</h2>
+<aside>You can also call the axis on a transition to animate changes to the domain!</aside>
+</section>
+
+<section>
+<pre><code class="css">.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}</code></pre>
+<h2>Customize axis appearance via CSS.</h2>
+<aside>The CSS snippet here is a good default appearance for axes, but you can customize it however you like. The next slide shows a ggplot2-inspired appearance.</aside>
+</section>
+
+<section id="axis-example" class="ggplot">
+<script>(function() {
+
+var format = d3.time.format("%b %Y");
+
+d3.csv("stocks.csv", function(stocks) {
+  stocks.forEach(function(d) {
+    d.price = +d.price;
+    d.date = format.parse(d.date);
+  });
+
+  stocks = stocks.filter(function(d) {
+    return d.symbol == "S&P 500";
+  });
+
+  d3.select("#axis-example")
+      .datum(stocks)
+    .call(timeChart()
+      .margin({top: 80, right: 80, bottom: 80, left: 80})
+      .x(function(d) { return d.date; })
+      .y(function(d) { return d.price; }));
+});
+
+})()</script>
+</section>
+
+<section>
+<h1>Ticks</h1>
+<h2>Quantitative scales can be queried for “human-readable” values.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear()
+    .domain([12, 24])
+    .range([0, 720]);
+
+x.ticks(5); // [12, 14, 16, 18, 20, 22, 24]</code></pre>
+<h2>The requested count is only a hint (for better or worse).</h2>
+</section>
+
+<section>
+<h1>Tick Formats</h1>
+<h2>See <a href="https://github.com/mbostock/d3/wiki/Formatting#wiki-d3_format">d3.format</a> and <a href="https://github.com/mbostock/d3/wiki/Time-Formatting#wiki-format">d3.time.format</a>.</h2>
+</section>
+
+<section class="chapter">
+<h1>Marks</h1>
+<aside>Marks, as in graphical marks or shapes: the various ways in which you can represent a data point visually.</aside>
+</section>
+
+<section>
+<h1>SVG Coordinates</h1>
+<h2>Absolute positioning; the origin ⟨0,0⟩ is the top-left corner!</h2>
+<aside>Because the origin is in the top-left rather than bottom-left, you often see y-scales with an inverted range (e.g., [height, 0]).</aside>
+</section>
+
+<section id="margin">
+<script>(function() {
+
+var svg = d3.select("#margin").append("svg")
+    .attr("width", 1280)
+    .attr("height", 720)
+    .style("position", "absolute")
+    .style("top", 0)
+    .style("left", 0)
+  .append("g")
+    .attr("transform", "translate(80,80)");
+
+var defs = svg.append("defs");
+
+defs.append("marker")
+    .attr("id", "triangle-start")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", 10)
+    .attr("refY", 5)
+    .attr("markerWidth", -8)
+    .attr("markerHeight", 8)
+    .attr("orient", "auto")
+  .append("path")
+    .style("fill", "#fff")
+    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+
+defs.append("marker")
+    .attr("id", "triangle-end")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", 10)
+    .attr("refY", 5)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
+    .attr("orient", "auto")
+  .append("path")
+    .style("fill", "#fff")
+    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+
+svg.append("rect")
+    .attr("width", 1120)
+    .attr("height", 480);
+
+var g = svg.append("g")
+    .attr("transform", "translate(80,80)");
+
+g.append("rect")
+    .attr("width", 960)
+    .attr("height", 320)
+    .style("stroke-dasharray", "8,12");
+
+svg.append("line")
+    .attr("x2", 80)
+    .attr("y2", 80)
+    .attr("marker-end", "url(#triangle-end)");
+
+svg.append("line")
+    .attr("x1", 560)
+    .attr("x2", 560)
+    .attr("y2", 80)
+    .attr("marker-end", "url(#triangle-end)");
+
+svg.append("line")
+    .attr("x1", 560)
+    .attr("x2", 560)
+    .attr("y1", 400)
+    .attr("y2", 480)
+    .attr("marker-start", "url(#triangle-start)");
+
+svg.append("line")
+    .attr("x1", 0)
+    .attr("x2", 80)
+    .attr("y1", 280)
+    .attr("y2", 280)
+    .attr("marker-end", "url(#triangle-end)");
+
+svg.append("line")
+    .attr("x1", 1120)
+    .attr("x2", 1040)
+    .attr("y1", 280)
+    .attr("y2", 280)
+    .attr("marker-end", "url(#triangle-end)");
+
+svg.append("text")
+    .text("origin")
+    .attr("y", -12);
+
+svg.append("circle")
+    .attr("r", 6);
+
+g.append("text")
+    .text("translate(left,top)")
+    .attr("y", -12);
+
+svg.selectAll("rect,line")
+    .style("fill", "none")
+    .style("stroke", "#fff")
+    .style("stroke-width", "2px");
+
+svg.selectAll("text,circle")
+    .style("fill", "#fff");
+
+})()</script>
+<h2>Use transforms to define a new origin.</h2>
+<aside>The "transform" attribute on &lt;g&gt; elements lets you define a new coordinate system. A translate lets you shift the origin based on margins; this approach is convenient because you isolate the margin definition to a single place in your code.</aside>
+</section>
+
+<section>
+<pre><code>var svg = d3.select("body").append("svg")
+    .attr("width", outerWidth)
+    .attr("height", outerHeight);
+
+var g = svg.append("g")
+    .attr("transform", "translate("
+      + marginLeft + ","
+      + marginTop + ")");</code></pre>
+<h2>Use margins for decorative elements, such as axes.</h2>
+</section>
+
+<section>
+<h1>SVG Basic Shapes</h1>
+<h2><a href="http://www.w3.org/TR/SVG/shapes.html">SVG Spec</a></h2>
+</section>
+
+<section id="rect">
+<pre><code class="html">&lt;rect
+    x="0"
+    y="0"
+    width="0"
+    height="0"
+    rx="0"
+    ry="0"&gt;</code></pre>
+<h2>Rect</h2>
+<script>(function() {
+
+var width = 1280,
+    height = 720;
+
+var svg = d3.select("#rect").append("svg")
+    .attr("class", "chart")
+    .attr("width", width)
+    .attr("height", height)
+    .on("mousemove", mousemove);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+
+function mousemove() {
+  var m = d3.mouse(this),
+      x = m[0],
+      y = m[1];
+
+  svg.append("rect")
+      .attr("x", -10)
+      .attr("y", -10)
+      .attr("width", 20)
+      .attr("height", 20)
+      .attr("transform", "translate(" + x + "," + y + ")scale(.1)")
+      .style("fill", "none")
+      .style("stroke", "#fff")
+    .transition()
+      .duration(750)
+      .attr("transform", "translate(" + x + "," + y + ")scale(4)")
+      .remove();
+}
+
+})()</script>
+<aside>Note that position and size must be defined as attributes in SVG, rather than styles. Colors and opacity should be specified as CSS, however.</aside>
+</section>
+
+<section id="circle">
+<pre><code class="html">&lt;circle
+    cx="0"
+    cy="0"
+    r="0"&gt;</code></pre>
+<h2>Circle</h2>
+<script>(function() {
+
+var width = 1280,
+    height = 720;
+
+var svg = d3.select("#circle").append("svg")
+    .attr("class", "chart")
+    .attr("width", width)
+    .attr("height", height)
+    .on("mousemove", mousemove);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+
+function mousemove() {
+  var m = d3.mouse(this),
+      x = m[0],
+      y = m[1];
+
+  svg.append("circle")
+      .attr("r", 20)
+      .attr("transform", "translate(" + x + "," + y + ")scale(.1)")
+      .style("fill", "none")
+      .style("stroke", "#fff")
+    .transition()
+      .duration(750)
+      .attr("transform", "translate(" + x + "," + y + ")scale(4)")
+      .remove();
+}
+
+})()</script>
+<aside>Don’t forget the r attribute, or your circles will be invisible!</aside>
+</section>
+
+<section id="line">
+<pre><code class="html">&lt;line
+    x1="0"
+    y1="0"
+    x2="0"
+    y2="0"&gt;</code></pre>
+<h2>Line</h2>
+<script>(function() {
+
+var width = 1280,
+    height = 720,
+    x0,
+    y0;
+
+var svg = d3.select("#line").append("svg")
+    .attr("class", "chart")
+    .attr("width", width)
+    .attr("height", height)
+    .on("mousemove", mousemove);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+
+function mousemove() {
+  var m = d3.mouse(this),
+      x1 = m[0],
+      y1 = m[1];
+
+  if (x0 != null) {
+    svg.append("line")
+      .attr("x1", x0)
+      .attr("y1", y0)
+      .attr("x2", x1)
+      .attr("y2", y1)
+      .style("stroke-width", "3px")
+      .style("stroke", "#fff")
+    .transition()
+      .duration(750)
+      .remove();
+
+    x1 = y1 = null;
+  }
+
+  x0 = x1;
+  y0 = y1;
+}
+
+})()</script>
+<aside>Mousemove?</aside>
+</section>
+
+<section id="text">
+<pre><code class="html">&lt;text
+    x="0"
+    y="0"
+    dx="0"
+    dy="0"
+    text-anchor="start"&gt;</code></pre>
+<h2>Text</h2>
+<script>(function() {
+
+var width = 1280,
+    height = 720;
+
+var svg = d3.select("#text").append("svg")
+    .attr("class", "chart")
+    .attr("width", width)
+    .attr("height", height)
+    .on("mousemove", mousemove);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+
+function mousemove() {
+  var m = d3.mouse(this),
+      x = m[0],
+      y = m[1];
+
+  svg.append("text")
+      .attr("text-anchor", "middle")
+      .attr("transform", "translate(" + x + "," + y + ")scale(.1)")
+      .text("Hello!")
+      .style("fill", "white")
+    .transition()
+      .duration(750)
+      .attr("transform", "translate(" + x + "," + y + ")scale(2)")
+      .remove();
+}
+
+})()</script>
+<aside>SVG is designed to be agnostic about text direction (left-to-right vs. right-to-left), so the text-anchor attribute can have the values "start", "middle" and "end".</aside>
+</section>
+
+<section>
+<pre><code class="html">&lt;text dy=".35em"&gt;bottom&lt;/text&gt;
+&lt;text dy=".35em"&gt;middle&lt;/text&gt;
+&lt;text dy=".71em"&gt;top&lt;/text&gt;</code></pre>
+<h2>Vertical alignment of text is slightly awkward.</h2>
+</section>
+
+<section>
+<h1>SVG Paths</h1>
+<h2><a href="http://www.w3.org/TR/SVG/paths.html#PathData">SVG Spec</a></h2>
+</section>
+
+<section>
+<code class="html wall">&lt;path d="M152.64962091501462,320.5600780855698L133.88913955606318,325.4363177123538L134.96890954443046,330.37917634921996L131.19348249532786,331.158393614812L98.56681109628815,335.53933807857004L91.14450799488135,333.79662025279L72.1880101321918,333.74733970068166L69.51723455785742,332.8569681440152L62.37313911354066,333.2100666843387L62.248334309137434,335.3677272708405L58.843440998888326,335.0574959605036L53.97667317214221,331.36075125633175L56.30952738118711,325.9417994311851L63.80207296237137,326.0219658098969L68.37010032001055,321.68160223702955L68.82177412097933,318.08112591435287L73.34…"&gt;</code>
+<h2>Paths require another mini-language!</h2>
+<aside>It’s occasionally useful to generate path strings by hand, but since this is cumbersome, D3 provides ways to construct common path types from data.</aside>
+</section>
+
+<section>
+<h1>Path Generators</h1>
+<h2>Configurable functions for generating paths from data.</h2>
+</section>
+
+<section>
+<h1><a href="https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line">d3.svg.line</a></h1>
+<h2>Define a path in terms of <i>x</i> and <i>y</i>.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear(),
+    y = d3.scale.linear();
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.x); })
+    .y(function(d) { return y(d.y); });</code></pre>
+<h2>Compose scales with data accessors to define position.</h2>
+</section>
+
+<section>
+<pre><code>svg.append("path")
+    .datum(objects)
+    .attr("class", "line")
+    .attr("d", line);</code></pre>
+<h2>Pass data to the line generator directly, or via selection.attr.</h2>
+<aside>The datum operator lets you bind data to elements without computing a data-join; in this case, we’re assigning a single data point to a single element. The confusing part is that this single data point is actually an array of objects—since we’re using a single path element to visualize an array of data points. So occasionally the concept of mapping data to elements isn’t exactly one-to-one.</aside>
+</section>
+
+<section>
+<h1><a href="https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-area">d3.svg.area</a></h1>
+<h2>Define a path in terms of <i>x</i>, <i>y<sub>0</sub></i> and <i>y<sub>1</sub></i>.</h2>
+</section>
+
+<section>
+<pre><code>var x = d3.scale.linear(),
+    y = d3.scale.linear();
+
+var area = d3.svg.area()
+    .x(function(d) { return x(d.x); })
+    .y0(height)
+    .y1(function(d) { return y(d.y); });</code></pre>
+<h2>For non-stacked area charts, <i>y<sub>0</sub></i> is constant.</h2>
+</section>
+
+<section id="streamgraph">
+<script>d3.select("#streamgraph").call(streamChart())</script>
+<h2>For streamgraphs, use <a href="https://github.com/mbostock/d3/wiki/Stack-Layout">d3.layout.stack</a> to compute the baseline.</h2>
+</section>
+
+<section>
+<h1>Line Interpolators</h1>
+<h2>Line and area generators support multiple interpolation modes.</h2>
+</section>
+
+<section id="interpolate-linear-chart">
+<h1>Linear Interpolation</h1>
+<script>d3.select("#interpolate-linear-chart").call(interpolateChart())</script>
+<aside>Mousemoooooove.</aside>
+</section>
+
+<section id="interpolate-step-chart">
+<h1>Step Interpolation</h1>
+<script>d3.select("#interpolate-step-chart").call(interpolateChart().interpolate("step-after"))</script>
+<aside>Step-before and step-after interpolation are handy for bar charts, and for visualizing step functions (values that change instantaneous&shy;ly rather than gradually).</aside>
+</section>
+
+<section id="interpolate-basis-chart">
+<h1>Basis Interpolation</h1>
+<script>d3.select("#interpolate-basis-chart").call(interpolateChart().interpolate("basis"))</script>
+<aside>Note that with basis interpolation, the line doesn’t always go through the control point. D3 also provides cardinal and cubic monotone interpolation; the latter is generally preferred to avoid misleading.</aside>
+</section>
+
+<section>
+<h1>Radial Areas <span class="grey">&</span> Lines</h1>
+<h2>Similar to d3.svg.<span class="grey">{</span>area<span class="grey">,</span>line<span class="grey">}</span>, except in polar coordinates.</h2>
+<aside>See the examples included in the git repository.</aside>
+</section>
+
+<section>
+<h1><a href="https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-arc">d3.svg.arc</a></h1>
+<h2>A path generator for pie and donut charts, among other uses.</h2>
+</section>
+
+<section>
+<pre><code>var myArc = {
+  "innerRadius": 0,
+  "outerRadius": 360,
+  "startAngle": 0, // 12 o'clock
+  "endAngle": 1.2 // radians
+};</code></pre>
+<h2>By default, takes as input an object with arc-related properties.</h2>
+</section>
+
+<section>
+<pre><code>var arc = d3.svg.arc()
+    .innerRadius(0)
+    .outerRadius(360);</code></pre>
+<h2>Override the accessors to set constant properties.</h2>
+<aside>If you define the inner and outer radius as constants, you no longer need to specify them as properties on the input objects; so this arc generator could take as input {startAngle: 0, endAngle: 1.2}.</aside>
+</section>
+
+<section>
+<pre><code>// construct a default pie layout
+var pie = d3.layout.pie();
+
+// derive data to feed to d3.svg.arc
+var myArcs = pie(numbers);</code></pre>
+<h2>Use d3.layout.pie to compute start and end angles from data.</h2>
+<aside>The pie layout returns data objects with startAngle and endAngle properties that you can feed to d3.svg.arc.</aside>
+</section>
+
+<section class="chapter">
+<h1>Layouts</h1>
+</section>
+
+<section>
+<h1>Layouts are Data</h1>
+<h2>Layouts are reusable algorithms that generate data, not display.</h2>
+<aside>This abstract approach makes it easier to reuse layouts in interesting ways, such as combining the cluster layout with the bundle layout for hierarchical edge bundling, or using layouts to render to canvas rather than SVG.</aside>
+</section>
+
+<section>
+<h1>Layouts are Varied</h1>
+<h2>Each layout is different. Most are stateless, but not all.</h2>
+</section>
+
+<section>
+<h1>Hierarchical Layouts</h1>
+<h2>There are lots of ways to visualize hierarchical data!</h2>
+</section>
+
+<section style="background:url(treemap.png);">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111018/treemap.html">d3.layout.treemap</a></h2>
+<aside>← That’s a link to a cool demo. Maybe you should click it. You should probably click it.</aside>
+</section>
+
+<section style="background:url(tree.png) 100%;">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111018/tree.html">d3.layout.tree</a></h2>
+</section>
+
+<section style="background:url(pack.png);">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111018/pack.html">d3.layout.pack</a></h2>
+</section>
+
+<section style="background:url(partition.png);">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111018/partition.html">d3.layout.partition</a></h2>
+</section>
+
+<section>
+<pre><code>var parent = {"children": […]},
+     child = {"value": …};</code></pre>
+<h2>The hierarchical layouts use a shared representation of data.</h2>
+<aside>You can use a different representation of data by changing the layout’s accessor functions, but most of the time it’s easiest to stick to the default data format.</aside>
+</section>
+
+<section>
+<pre><code>var treemap = d3.layout.treemap()
+    .padding(4)
+    .size([width, height]);</code></pre>
+<h2>Layouts are configurable functions.</h2>
+<aside>For example, here the padding controls the space reserved between a parent node in the treemap and its children. For a treemap, padding is necessary so that you can see the hierarchical structure; if you don’t use padding, you’ll want to use some other way of indicating the hierarchy, such as color.</aside>
+</section>
+
+<section>
+<pre><code>function x(d) { return d.x; }
+function y(d) { return d.y; }
+function dx(d) { return d.dx; }
+function dy(d) { return d.dy; }</code></pre>
+<h2>The layout populates position properties on the nodes.</h2>
+<aside>This slide shows accessor functions for retrieving the layout’s computed properties; these accessor functions are used on the next slide to display the layout.</aside>
+</section>
+
+<section>
+<pre><code>svg.selectAll(".cell")
+    .data(treemap.nodes(root))
+  .enter().append("rect")
+    .attr("class", "cell")
+    .attr("x", x)
+    .attr("y", y)
+    .attr("width", dx)
+    .attr("height", dy);</code></pre>
+<h2>By accessing those properties, you can visualize the layout.</h2>
+</section>
+
+<section style="background:#fff url(force.png) 50% no-repeat;">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111116/force-collapsible.html">d3.layout.force</a> <a class="shadow" href="http://vimeo.com/29458354">(talk)</a></h2>
+<aside>Force layouts are commonly used for visualizing networks, but they can also be used for fuzzy position encoding. For example, beeswarm plots are variants of scatterplots that use collision detection: rather than overplotting, coincident dots are pushed apart. I gave a talk on force layouts a few months back that explains how these simulations work, and various interesting applications.</aside>
+</section>
+
+<section style="background:#fff url(bundle.png) 50% no-repeat;">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111116/bundle.html">d3.layout.bundle</a></h2>
+</section>
+
+<section style="background:#fff url(voronoi.png) 50% no-repeat;">
+<h2><a class="shadow" href="http://mbostock.github.com/d3/talk/20111116/airports.html">d3.geom.voronoi</a></h2>
+<aside>D3’s voronoi implementation is effectively a layout, but it lives in the d3.geom package. Voronoi diagrams are useful for scatterplots and other displays with small graphical elements: use the voronoi to find the closest point to the mouse. See also Tovi Grossman’s CHI 2005 paper on Bubble Cursors.</aside>
+</section>
+
+<section style="background:#fff url(uberdata.png) 50% 0% no-repeat;">
+<h2><a class="shadow" href="http://bost.ocks.org/mike/uberdata/">d3.layout.chord</a></h2>
+</section>
+
+<section>
+<h1>Chart Components</h1>
+<h2>Reuse code through <a href="http://bost.ocks.org/mike/chart/">configurable functions</a>.</h2>
+<aside>D3 has a number of reusable components; I didn’t cover all of them in the workshop. I recently wrote an article outlining a <a href="http://bost.ocks.org/mike/chart/">lightweight convention</a> for reusable components. You might find it useful when implementing your own visualizations.</aside>
+</section>
+
+<section class="chapter">
+<h2><a href="http://bost.ocks.org/mike/">Mike Bostock</a><div class="grey">@mbostock</div></h2>
+<aside>Kudos for reading all 150+ slides! These slides were built with <a href="https://github.com/mbostock/stack">stack.js</a>.</aside>
+</section>
+
+<script src="http://mbostock.github.com/stack/stack.v0.js"></script>
+<script src="highlight.v0.js"></script>

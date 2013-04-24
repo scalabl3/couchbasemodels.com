@@ -3,16 +3,21 @@ require 'map'
 
 module DocumentStore
   include Term::ANSIColor
-  
-  COUCH = Couchbase.new({
-      :hostname => Yetting.couchbase_host,
-      :pool => "default",
-      :bucket => Yetting.couchbase_bucket,
-      :username => Yetting.couchbase_bucket,
-      :password => Yetting.couchbase_password,
-      :port => 8091
-  })
 
+
+  setting_hash = { :hostname => Yetting.couchbase_host,
+    :pool => "default",
+    :bucket => Yetting.couchbase_bucket,
+    :port => 8091
+  }
+  if (Yetting.couchbase_password && !Yetting.couchbase_password.empty?)
+    setting_hash[:username] = Yetting.couchbase_bucket
+    setting_hash[:password] = Yetting.couchbase_password
+  end
+
+  
+  CB = Couchbase.connect(setting_hash)
+  
   #### INSTANCE METHODS
 
   def document_exists?(key)
@@ -76,55 +81,55 @@ module DocumentStore
   class << self
 
     def delete_all_documents!
-      COUCH.flush
+      CB.flush
     end
 
     def document_exists?(key)
       return nil unless key
 
       # Save quiet setting
-      tmp = COUCH.quiet
+      tmp = CB.quiet
 
       # Set quiet to be sure
-      COUCH.quiet = true
+      CB.quiet = true
 
-      doc = COUCH.get(key)
+      doc = CB.get(key)
 
       # Restore quiet setting
-      COUCH.quiet = tmp
+      CB.quiet = tmp
 
       !doc.nil?
     end
 
     def initialize_document(key, value, args={})
       return nil unless key
-      COUCH.quiet = true
+      CB.quiet = true
       doc = DocumentStore.get_document( key )
-      (value.is_a?(Fixnum) || value.is_a?(Integer) ? COUCH.set( key, value ) : COUCH.add( key, value )) unless doc
+      (value.is_a?(Fixnum) || value.is_a?(Integer) ? CB.set( key, value ) : CB.add( key, value )) unless doc
     end
 
     def create_document(key, value, args={})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.add(key, value, args) # => if !quiet, Generates Couchbase::Error::KeyExists if key already exists
+      CB.quiet = args[:quiet] || true
+      CB.add(key, value, args) # => if !quiet, Generates Couchbase::Error::KeyExists if key already exists
     end
 
     def replace_document(key, value, args = {})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.replace(key, value) # => if !quiet, Generates Couchbase::Error::NotFound if key doesn't exist
+      CB.quiet = args[:quiet] || true
+      CB.replace(key, value) # => if !quiet, Generates Couchbase::Error::NotFound if key doesn't exist
     end
 
     def get_document(key, args = {})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      doc = COUCH.get(key, args)
+      CB.quiet = args[:quiet] || true
+      doc = CB.get(key, args)
       doc.is_a?(Hash) ? Map.new(doc) : doc
     end
 
     def get_documents(keys = [], args = {})
       return nil unless keys || keys.empty?
-      values = COUCH.get(keys, args)
+      values = CB.get(keys, args)
 
       if values.is_a? Hash
         tmp = []
@@ -141,34 +146,31 @@ module DocumentStore
 
     def delete_document(key, args={})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.delete(key)
+      CB.quiet = args[:quiet] || true
+      CB.delete(key)
     end
 
-    def increase_atomic_count(key, args={})
+    def increase_atomic_count(key, args={} )
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.incr(key, args[:amount] || 1)
+      CB.quiet = args[:quiet] || true
+      CB.incr(key, args[:amount] || 1)
     end
 
     def decrease_atomic_count(key, args={})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.decr(key, args[:amount] || 1)
+      CB.quiet = args[:quiet] || true
+      CB.decr(key, args[:amount] || 1)
     end
 
     # preferred way is to use create/replace instead of this to make sure there are no collisions
     def force_set_document(key, value, args={})
       return nil unless key
-      COUCH.quiet = args[:quiet] || true
-      COUCH.set(key, value, args)
+      CB.quiet = args[:quiet] || true
+      CB.set(key, value, args)
     end
 
   end# end ClassMethods
 
   #####################################################################
-
-
-
 
 end

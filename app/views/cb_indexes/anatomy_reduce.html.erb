@@ -1,0 +1,381 @@
+<% content_for :title, "Understanding Reduces in Couchbase" %>
+<% content_for :keywords, "map, reduce, map-reduce, examples, index, secondary index, couchbase" %>
+<% content_for :description, "Understanding in Couchbase" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Indexes</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Understanding Reduces</li>
+</ul>
+
+<div class="page-header">
+  <h1>Understanding Reduces
+		<small>Reducing Indexes for Documents</small>
+	</h1>
+	<br />
+	<p class="lead w80">Secondary Indexes are used to index Document keys and parts of JSON values, and Reductions create aggregate values on that Index</p>
+</div>
+
+
+<h2>Reduce Example #1</h2>
+
+<p class="f18 w60">
+As part of the View is a Reduction that can also take place. When you map() documents and index them, you can group Index-Keys together and produce aggregate information
+as a "Reduction". This allows for the creation of statistics on a collection of documents and other creative uses of reduce. Continuing with our data set from <a href="/indexes/anatomy">Anatomy of View</a>
+let's add another document data point, and a reduction to see how it works.
+</p>
+<br />
+
+<h3>Document Sample</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+key: user::2a92jd02828
+
+{
+  doctype: "user",
+  name: "Aldon Smith",
+  username: "rudeboy",
+  email: "asmith@email.com",
+  points: 1000,
+  last_login: 1360003359
+}
+
+key: user::828c201abf
+
+{
+  doctype: "user",
+  name: "Byron Smith",
+  username: "metallicafan",
+  email: "bsmith@email.com",
+  points: 2000,
+  last_login: 1360002838
+}
+
+key: user::3f28f2929d
+
+{
+  doctype: "user",
+  name: "Calvin Smith",
+  username: "bono2830",
+  email: "csmith@email.com",
+  points: 3000,
+  last_login: 1360001292
+}
+
+key: user::52a8289df
+
+{
+  doctype: "user",
+  name: "Dexter Smith",
+  username: "thedex",
+  points: 0,
+  last_login: 1360002939
+}
+
+</pre>
+<br />
+
+<h3>Map Function (by_username)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.username) {
+
+    // Index the username field, output the email
+    emit(doc.username, doc.email)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<h3>Reduce Function (built-in _count)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+_count
+</pre>
+<br />
+
+<p class="f18 w60">
+In this scenario we are also reducing the results of the map function to get a count of the number of Index-Keys in the Index. We are querying with <strong>reduce=true</strong> in the query parameters:
+</p>
+<br />
+
+
+<table class="table table-bordered w60">
+  <thead>
+    <th>Key</th>
+    <th>Value</th>
+    <th>Document Key</th>
+  </thead>
+  <tr>
+    <td>null</td>
+    <td>4</td>
+    <td>undefined</td>
+  </tr>
+</table>
+<br />
+
+<p class="f18 w60">
+Notice when we do the reduction, we are collapsing rows in our index and there is no associated row key nor document key for the result (since there are many, potentially millions of course if you have a large dataset).
+</p>
+<br />
+
+<h2>Reduce Example #2</h2>
+
+<p class="f18 w60">
+What if we wanted to see all users ordered by the number of points they have, and also see stats on the highest, lowest, and average points? 
+</p>
+<br />
+
+
+
+<h3>Map Function (points_by_username)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.points) {
+
+    // Index the points field and output the username
+    emit(doc.username, doc.points)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<h3>Results without Reduction</h3>
+<br />
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>"bono2830"</td>
+      <td>3000</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>"metallicafan"</td>
+      <td>2000</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>"rudeboy"</td>
+      <td>1000</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+</table>
+<br />
+
+<p class="f18 w60">
+If we query this View with <strong>reduce=false</strong> you only look at results of the map() function. In this case, user "thedex" is not in the index with points: 0 because in the <strong>if</strong> statement
+points == 0, and 0, false and null are logical false in javascript.
+</p>
+<br />
+
+<p class="f18 w60">
+Notice that the order is backwards as far as points. If we want to create a leaderboard of highest points, we have some things to consider. First
+the _stats and _sum reduce functions can only work on numbers. Let's first see the result and then we can write another View that functions as a simple leaderboard, including people with 0 points.
+</p>
+<br />
+
+<blockquote class="f18 w60">
+  <strong>_stats</strong> and <strong>_sum</strong> built-in reduce functions can only work output values that are numerical, you will receive an error if you try to use them on strings<br />
+  <strong>_count</strong> built-in reduce function can be used with any output values
+</blockquote>
+
+<h3>Reduce Function (built-in _stats)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+_stats
+</pre>
+<br />
+
+
+<table class="table table-bordered w60">
+  <thead>
+    <th>Key</th>
+    <th>Value</th>
+    <th>Document Key</th>
+  </thead>
+  <tr>
+    <td>null</td>
+    <td>{"sum":6000, "count":3, "min":1000, "max":3000, "sumsqr":14000000}</td>
+    <td>undefined</td>
+  </tr>
+</table>
+<br />
+
+<p class="f18 w60">
+From the summary data you can calculate average (2000 in this case) by using the sum and count, and you can also see the min/max. The sum of squares can be used for statistical calculations.
+</p>
+<br />
+
+
+<h2>Creating a Leaderboard</h2>
+  
+<p class="f18 w60">
+Due to the use of the _stats reduce above, we have to use the points value in the output of the <strong>emit()</strong> function. If we want a Leaderboard however we need to index the points themselves.
+In this case we have two options, we can index the points and output the points, which allows for the _stats reduction when we want summary info. We then have to use a get() on the row key to retrieve the
+document information (username).
+</p>
+<br />
+
+<h3>Map Function (by_points)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.points >= 0 ) {
+
+    // Index the points field and output the username
+    emit(doc.points, doc.points)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<h3>Results without Reduction</h3>
+<br />
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>user::52a8289df</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>1000</td>
+      <td>1000</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>2000</td>
+      <td>2000</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>4</td>
+      <td>3000</td>
+      <td>3000</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+
+</table>
+<br />
+  
+
+
+
+<h3>Map Function (usernames_by_points)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.points >= 0 ) {
+
+    // Index the points field and output the username
+    emit(doc.points, doc.username)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<h3>Results but can only use _count reduction</h3>
+<br />
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>0</td>
+      <td>"thedex"</td>
+      <td>user::52a8289df</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>1000</td>
+      <td>"rudeboy"</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>2000</td>
+      <td>"metallicafan"</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>4</td>
+      <td>3000</td>
+      <td>"bono2830"</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+
+</table>
+<br />
+  
+<p class="f18 w60">
+There are many different ways to use reductions, and you can write your own custom reducers, however, be aware they can increase latency if you don't use the built-in one's as it requires more CPU to compute custom reduces. See the <a href="/indexes/examples">Map-Reduce Examples</a> for more details of additional reduces and a sample custom reducer.
+</p>
+<br />
+
+<h3>Many Uses for Reducing Views</h3>
+<div class="w80">
+<dl>
+	<dt>Create simple counts</dt> 
+		<dd>
+      Simple aggregate counts are easy to do, and they can use existing map() functions with a reduce=true in the query parameters
+		</dd>
+	<dt>Additional Reduce statistical aggregates</dt>
+		<dd>
+		  Using _stats you can gather even more aggregate data that is useful for having sums, averages, min/max, and sum of squares
+		</dd>
+</dl>
+</div>
+
+
+<%= render :partial => "/layouts/comments" %>

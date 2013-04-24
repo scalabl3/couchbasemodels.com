@@ -2,6 +2,8 @@ class User < ModelBase
   include DocumentStore
   include ModelGlobal
   include ErrorCodes
+  include ModelValidations
+  include ApiHelper
 
   # by default include the type, which is the class name downcased
   fattr :type, :default => self.to_s.downcase
@@ -91,7 +93,7 @@ class User < ModelBase
       initialize_document(@docs[:user], self.to_hash)
 
       # initialize if we have a facebookID and userID, simple for now
-      initialize_document(@docs[:github_ref], @github_id)
+      initialize_document(@docs[:github_ref], @uid)
       initialize_document(@docs[:language_pref], "ruby")
 
       ### STATS, initialize all docs that start with num_ with a count of 0
@@ -132,6 +134,12 @@ class User < ModelBase
   #### PROPERTIES & PROPERTY OVERLOADS
   public
 
+  def update
+    if @uid
+      replace_document(@docs[:user], self.to_hash)
+    end
+  end
+  
   def is_super_user?
     @super_user
   end
@@ -148,6 +156,39 @@ class User < ModelBase
     get_document(@docs[:language_pref])
   end
 
+  def action_submit_comment(page, comment_text)
+    c_hash = { 
+      :create => true,
+      :uid => @uid, 
+      :page_id => page,
+      :comment_text => comment_text     
+    }
+    if validate_submit_comment(page, comment_text)
+      new_comment = Comment.new(c_hash)
+      
+      result = { :success => true,
+                 :comment_id => new_comment.comment_id,
+                 :comment_text => new_comment.comment_text,
+                 :uid => @uid,
+                 :error_name => nil,
+                 :error_code => nil,
+                 :reason => nil,
+                 :help_text => nil,
+                 :backtrace => nil}
+    end
+    
+  rescue Exception => e
+    raise e unless COMMENTING_ERRORS.has_key?(e.message.to_sym)
+    result = {
+        :success => false,
+        :comment_id => nil,
+        :error_name => e.message.to_s, 
+        :error_code => ErrorCodes::COMMENTING_ERRORS[e.message.to_sym][0],
+        :reason => ErrorCodes::COMMENTING_ERRORS[e.message.to_sym][1],
+        :help_text => ErrorCodes::COMMENTING_ERRORS[e.message.to_sym][2],
+        :backtrace => e.backtrace.inspect
+    }
+  end
   #### USER ACTIONS - the things the User can DO
 
 =begin

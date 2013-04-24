@@ -1,5 +1,7 @@
 class CbModelsController < ApplicationController
-  def index
+  include DocumentStore
+  
+  def index    
   end
 
   def product_catalog

@@ -1,0 +1,326 @@
+<% content_for :title, "Anatomy of a Map/Reduce View" %>
+<% content_for :keywords, "map, reduce, map-reduce, anatomy, index, secondary index, couchbase" %>
+<% content_for :description, "Secondary Index in Couchbase using Map/Reduce to index and query Documents and parts of Documents" %>
+<ul class="breadcrumb">
+  <li>
+    <a href="/">Home</a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="/patterns">Indexes</a> <span class="divider">/</span>
+  </li>
+  <li class="active">Anatomy of a View</li>
+</ul>
+
+<div class="page-header">
+  <h1>Anatomy of a View
+		<small>Map-Reduce Indexes for Documents</small>
+	</h1>
+	<br />
+	<p class="lead w80">Secondary Indexes are used to index Document keys and parts of JSON values in order to Query and Iterate over Document Collections</p>
+</div>
+
+
+<p class="f18 w60">
+In Couchbase, indexes are created through Map-Reduce Indexers. When you want to search on individual fields within JSON documents, you need to write a View. A View lives within a Design Document, 
+and Couchbase allocates resources at the Design Document level. <strong>Design Documents</strong> or <em>Indexers</em>, can contain many <strong>Views</strong> or <em>Indexes</em>. When a Design Document is triggered to update, either automatically,
+or programmatically, since they are Indexers, all Indexes (Views) are updated at the same time in a batch.
+</p>
+<br />
+
+<blockquote class="f18">
+<strong>Terminology</strong>: Design Documents are Indexers, which contain one or many Views which are Indexes to be queried
+</blockquote>
+
+<br />
+
+<h3>The Map Function</h3>
+
+<img src="/assets/view_anatomy_map_plain_sm.png" alt="View Anatomy - Map Function" style="width: 600px;" /><br clear="all" /><br /><br />
+
+<p class="f18 w60">
+Map Functions are written in Javascript, and they specify how to process the Documents that pass through the Indexers. The parameters of the map function are the document data and the document metadata. 
+Document metadata includes the document key and the expiry as well as the document type (json or base64). Within the map function the <strong>emit()</strong> function is the actual Index creation. The emit() function takes
+two parameters, the index-key and the index-value or output value. Essentially you can think of emit() as creating a row, although it is stored as an append-only b-superstar-tree. During indexing the tree gets rebalanced/rotated.
+</p>
+<br /><br />
+
+<img src="/assets/view_anatomy_map_sm.png" alt="View Anatomy - Map Function" style="width: 600px;" /><br clear="all" /><br clear="all"/><br /><br />
+
+<p class="f18 w60">
+Understanding what an index is helps to use it properly. When you index a JSON field, or fields, you are creating an ordered set of rows based on the values of that JSON key. Let's look at an example to help understand
+what the Index looks like from the application and application programmer's point of view.
+</p>
+
+<br /><br />
+
+<h2>Simple Example #1</h2>
+
+<p class="f18 w60">
+Let's look at an example set of JSON Documents, we can imagine that there are thousands or millions of these.
+</p>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+key: user::2a92jd02828
+
+{
+  doctype: "user",
+  name: "Aldon Smith",
+  username: "rudeboy",
+  email: "asmith@email.com",
+  last_login: 1360003359
+}
+
+key: user::828c201abf
+
+{
+  doctype: "user",
+  name: "Byron Smith",
+  username: "metallicafan",
+  email: "bsmith@email.com",
+  last_login: 1360002838
+}
+
+key: user::3f28f2929d
+
+{
+  doctype: "user",
+  name: "Calvin Smith",
+  username: "bono2830",
+  email: "csmith@email.com",
+  last_login: 1360001292
+}
+
+</pre>
+<br />
+
+<p class="f18 w60">
+Since the documents are keyed without the email address (hybrid-random in this case). Here is a Map function that will index the email field to be able to query and retrieve all email addresses to send a newsletter out to.
+</p>
+<br />
+
+<h3>Map Function (by_email)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.email) {
+
+    // Index the email field, no need for output
+    emit(doc.email)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<p class="f18 w60">
+<strong>Every document passes through the Map function.</strong> The first <strong>if</strong> statement ensures that we are processing the documents that we want to process and index, in this case User documents indicated by the doc.doctype JSON field. We also ensure the field we are indexing exists in the document (as with Schema flexibility it quite possibly may not exist, or not exist yet).
+The result of the map function produces an <em>ordered</em> index on email addresses that can be queried:
+</p>
+<br />
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>"asmith@email.com"</td>
+      <td>null</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>"bsmith@email.com"</td>
+      <td>null</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>"csmith@email.com"</td>
+      <td>null</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+  
+</table>
+<br />
+
+<blockquote class="f18 w60">
+If you want to understand clearly how Indexes are ordered, they follow the default Unicode Collation methodology rather than byte-order, and you can learn more about it from my blog post: <a href="http://blog.couchbase.com/understanding-letter-ordering-view-queries" target="_blank">Understanding Letter Ordering in View Queries</a>.
+</blockquote>
+<br />
+
+<p class="f18 w60">
+As you can see the index is ordered and now these index-keys can be queried through a number of different methods: <strong>range query, match query, set-match query</strong>. 
+</p>
+<br />
+
+<h2>Simple Example #2</h2>
+
+<p class="f18 w60">
+What if we want to look up email addresses by usernames? We create another View with a different map function to index the username field, but in this case we can actually output the 
+email address as the output value since it won't change much and it's a single field.
+</p>
+<br />
+
+<h3>Map Function (emails_by_username)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, other documents are ignored
+  if (doc.doctype == "user" && doc.username) {
+
+    // Index the username field, output the email
+    emit(doc.username, doc.email)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<p class="f18 w60">
+In this case, the Index is ordered by the username field, and the email is the output which when we query the view is now available in the query results:
+</p>
+<br />
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>"bono2830"</td>
+      <td>"csmith@email.com"</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>"metallicafan"</td>
+      <td>"bsmith@email.com"</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>"rudeboy"</td>
+      <td>"asmith@email.com"</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+  
+</table>
+<br />
+
+<p class="f18 w60">
+What if we have a user document that doesn't have an email address (like a ghost user, or email wasn't required on signup)? We can see that by the output value being null in this case. In our map function we only had checked the existence of the username field.
+</p>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+key: user::52a8289df
+
+{
+  doctype: "user",
+  name: "Dexter Smith",
+  username: "thedex",
+  last_login: 1360002939
+}
+</pre>
+<br />
+
+
+<table class="table table-bordered w60">
+  <thead>
+      <th>#</th>
+      <th>Index-Key</th>
+      <th>Output Value</th>
+      <th>Document Key</th>
+  </thead>
+  <tr>
+      <td>1</td>
+      <td>"bono2830"</td>
+      <td>"csmith@email.com"</td>
+      <td>user::3f28f2929d</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>"metallicafan"</td>
+      <td>"bsmith@email.com"</td>
+      <td>user::828c201abf</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>"rudeboy"</td>
+      <td>"asmith@email.com"</td>
+      <td>user::2a92jd02828</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>"thedex"</td>
+      <td>null</td>
+      <td>user::52a8289df</td>
+  </tr>
+</table>
+<br />
+
+<p class="f18 w60">
+In this case, we know which users didn't supply an email address. Of course, we could create a map function specifically for that, and only index users that didn't supply an email address.
+</p>
+<br />
+
+<h3>Map Function (by_username_no_email)</h3>
+<br />
+
+<pre class="prettyprint linenums lang-js">
+function(doc, meta) {
+
+  // Ensure we are processing only user documents and that the index field exists, and that email address doesn't exist
+  if (doc.doctype == "user" && doc.username && !doc.email ) {
+
+    // Index the username field which match the if conditions
+    emit(doc.username, null)
+    
+  }
+  
+}
+</pre>
+<br />
+
+<p class="f18 w60">
+If we wanted to index the last login, we could output the unix timestamp as the index key, or we can convert it into an array using the <strong>dateToArray()</strong> function. See the <a href="/indexes/examples">Map-Reduce Examples</a> for more details of that.
+</p>
+<br />
+
+
+<h3>Many Uses for Map-Reduce Views</h3>
+<div class="w80">
+<dl>
+	<dt>Index Particular Fields within JSON Documents</dt> 
+		<dd>
+      By using Views you can index on particular fields within JSON documents. This is one of the highlights of Couchbase 2.0 and a very common use case.
+		</dd>
+	<dt>Creating Simulated Joins</dt>
+		<dd>
+      In the <a href="/indexes/examples">Map-Reduce Examples</a> you can see examples how how to join document sets together into a single Index that combines both. While
+      not exactly the same as a SQL Join, it can be very useful for a number of use cases.
+		</dd>
+</dl>
+</div>
+
+
+<%= render :partial => "/layouts/comments" %>
+
+
+
+
