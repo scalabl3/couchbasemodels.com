@@ -5,7 +5,7 @@ module DocumentStore
   include Term::ANSIColor
 
 
-  setting_hash = { :hostname => Yetting.couchbase_host,
+  setting_hash = { :node_list => Yetting.couchbase_servers,
     :pool => "default",
     :bucket => Yetting.couchbase_bucket,
     :port => 8091
