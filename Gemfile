@@ -12,7 +12,7 @@ gem 'term-ansicolor'
 gem 'bourbon'
 gem 'omniauth'
 gem 'omniauth-github', :git => 'https://github.com/igoodrich/omniauth-github.git'
-gem 'bootstrap-sass'
+gem 'bootstrap-sass', "~> 2.3.1"
 gem 'httparty'
 gem 'fattr'
 gem 'couchbase'
