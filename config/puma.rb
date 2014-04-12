@@ -4,7 +4,8 @@ threads Integer(ENV['MIN_THREADS']  || 1), Integer(ENV['MAX_THREADS'] || 12)
 preload_app!
 
 rackup      DefaultRackup
-port        ENV['port_cbmodels'] || 3000
+#port        ENV['port_cbmodels'] || 3001
+bind "unix://var/run/cbmodels.sock"
 environment ENV['env_cbmodels'] || 'development'
 
 on_worker_boot do
