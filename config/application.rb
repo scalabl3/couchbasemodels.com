@@ -76,7 +76,7 @@ module CouchbaseModels
 		Dotenv.load!
 		
 		cache_options = {
-			:node_list => ENV['couchbase_servers']
+			:node_list => ENV['couchbase_servers'],
 			:bucket => 'default',
 			:username => 'default',
 			:password => '',
@@ -88,7 +88,7 @@ module CouchbaseModels
 		session_options = {
 			:expire_after => 60.minutes,
 			:couchbase => {
-				:node_list => ENV['couchbase_servers']
+				:node_list => ENV['couchbase_servers'],
 				:bucket => 'default',
 				:username => 'default',
 				:password => '',
