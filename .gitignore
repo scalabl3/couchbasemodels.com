@@ -28,3 +28,5 @@ Gemfile.lock
 yetting.yml
 yetting.yml.local
 yetting.yml.production
+
+.env
