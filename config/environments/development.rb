@@ -1,7 +1,7 @@
 CouchbaseModels::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
-  config.cache_store = :dalli_store
+  #config.cache_store = :dalli_store
   
   # In the development environment your application's code is reloaded on
   # every request. This slows down response time but is perfect for development
