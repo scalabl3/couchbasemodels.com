@@ -80,13 +80,13 @@ module CouchbaseModels
 			:bucket => 'default',
 			:username => 'default',
 			:password => '',
-			:expire_in => 60.minutes,
+			:expire_in => 3600
 		}
 		
 		config.cache_store = :couchbase_store, cache_options
 		
 		session_options = {
-			:expire_after => 60.minutes,
+			:expire_after => 3600,
 			:couchbase => {
 				:node_list => ENV['couchbase_servers'],
 				:bucket => 'default',
