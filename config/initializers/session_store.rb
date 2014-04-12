@@ -23,15 +23,15 @@ CouchbaseModels::Application.config.session_storage = :couchbase_store, cache_op
 
 
 # Using Dalli Gem 
-require 'action_dispatch/middleware/session/dalli_store'
-
-Rails.application.config.session_store :dalli_store,
-                                       :memcache_server => Yetting.couchbase_servers,
-                                       :namespace => '_cbmodels_session',
-                                       :key => '_cbmodels_session',
-                                       :expire_after => 1.day,
-                                       :username => Yetting.couchbase_bucket,
-                                       :password => Yetting.couchbase_password
+# require 'action_dispatch/middleware/session/dalli_store'
+# 
+# Rails.application.config.session_store :dalli_store,
+#                                        :memcache_server => Yetting.couchbase_servers,
+#                                        :namespace => '_cbmodels_session',
+#                                        :key => '_cbmodels_session',
+#                                        :expire_after => 1.day,
+#                                        :username => Yetting.couchbase_bucket,
+#                                        :password => Yetting.couchbase_password  
 
 
 

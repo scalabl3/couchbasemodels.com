@@ -7,6 +7,7 @@ require "action_mailer/railtie"
 require "active_resource/railtie"
 require "sprockets/railtie"
 require "rails/test_unit/railtie"
+require "dotenv"
 
 if defined?(Bundler)
   # If you precompile assets before deploying to production, use this line
@@ -71,5 +72,30 @@ module CouchbaseModels
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+		
+		Dotenv.load!
+		
+		cache_options = {
+			:node_list => ENV['couchbase_servers']
+			:bucket => 'default',
+			:username => 'default',
+			:password => '',
+			:expire_in => 60.minutes,
+		}
+		
+		config.cache_store = :couchbase_store, cache_options
+		
+		session_options = {
+			:expire_after => 60.minutes,
+			:couchbase => {
+				:node_list => ENV['couchbase_servers']
+				:bucket => 'default',
+				:username => 'default',
+				:password => '',
+				:default_format => :marshal
+			}
+		}		 
+		require 'action_dispatch/middleware/session/couchbase_store'
+		config.session_store :couchbase_store, session_options
   end
 end
