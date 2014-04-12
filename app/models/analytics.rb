@@ -8,8 +8,8 @@
 #
 class Analytics
 
-  USER_COUNT_START    = Yetting.user_count_start
-  PAGE_COUNT_START    = Yetting.page_count_start
+  USER_COUNT_START    = 10000
+  PAGE_COUNT_START    = 10000
 
   # note: for the :most_x keys, we generate an additional key, appending ::min for minimum value to get on list
   # see create_default_docs() to see the pattern
@@ -26,7 +26,7 @@ class Analytics
   }.freeze
 
   def initialize(attr = {})
-    self.class.create_default_docs
+    #self.class.create_default_docs
   end
 
   # Make all these methods class methods
