@@ -14,14 +14,16 @@ gem 'omniauth'
 gem 'omniauth-github', :git => 'https://github.com/igoodrich/omniauth-github.git'
 gem 'bootstrap-sass'
 gem 'httparty'
-gem 'thin'
 gem 'fattr'
-gem 'couchbase', '>= 1.2.0.z.beta3'
+gem 'couchbase'
 gem 'pubnub'
 gem 'em-http-request'
 gem "uuid", "~> 2.3.5"
 gem 'yajl-ruby'
 gem "haml-rails"
+gem "rack-timeout"
+gem "puma"
+gem "foreman"
 gem "dotenv"
 
 # Gems used only for assets and not required
