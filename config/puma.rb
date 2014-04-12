@@ -5,7 +5,7 @@ preload_app!
 
 rackup      DefaultRackup
 #port        ENV['port_cbmodels'] || 3001
-bind "unix://var/run/cbmodels.sock"
+bind "unix://www/run/cbmodels.sock"
 environment ENV['env_cbmodels'] || 'development'
 
 on_worker_boot do
