@@ -5,15 +5,15 @@ module DocumentStore
   include Term::ANSIColor
 
 
-  setting_hash = { :node_list => Yetting.couchbase_servers,
+  setting_hash = { :node_list => ENV['couchbase_servers'].split(","),
     :pool => "default",
-    :bucket => Yetting.couchbase_bucket,
+    :bucket => 'default',
     :port => 8091
   }
-  if (Yetting.couchbase_password && !Yetting.couchbase_password.empty?)
-    setting_hash[:username] = Yetting.couchbase_bucket
-    setting_hash[:password] = Yetting.couchbase_password
-  end
+  # if (Yetting.couchbase_password && !Yetting.couchbase_password.empty?)
+  #   setting_hash[:username] = Yetting.couchbase_bucket
+  #   setting_hash[:password] = Yetting.couchbase_password
+  # end
 
   
   CB = Couchbase.connect(setting_hash)
