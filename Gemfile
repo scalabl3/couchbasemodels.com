@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '4.1.0'
+gem 'rails', '3.2.8'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -12,7 +12,7 @@ gem 'term-ansicolor'
 gem 'bourbon'
 gem 'omniauth'
 gem 'omniauth-github', :git => 'https://github.com/igoodrich/omniauth-github.git'
-gem 'bootstrap-sass'#, "~> 2.3.1"
+gem 'bootstrap-sass', "~> 2.3.1"
 gem 'httparty'
 gem 'fattr'
 gem 'couchbase'
