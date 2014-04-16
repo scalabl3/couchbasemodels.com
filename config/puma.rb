@@ -16,7 +16,7 @@ pidfile               '/www/run/cbmodels.pid'
 #state file considered broken right now (puma github)
 #state_path            "/www/run/cbmodels.state"
 
-stdout_redirect       "/www/log/cbmodels.stdout.log", "/www/log/cbmodels.stderr.log"
+stdout_redirect       "/www/log/puma-cbmodels-stdout.log", "/www/log/puma-cbmodels-stderr.log"
 
 environment           ENV['env_cbmodels'] || 'production'  
 
