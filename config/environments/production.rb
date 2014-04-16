@@ -33,7 +33,7 @@ CouchbaseModels::Application.configure do
 
   # See everything in the log (default is :info)
   # config.log_level = :debug
-	config.log_path = "/www/log/cbmodels.rails.#{Rails.env}.log"
+	config.log_path = "/www/log/rails-cbmodels-#{Rails.env}.log"
 	config.logger = Logger.new(config.log_path)
 	config.log_level = :info
 	 
